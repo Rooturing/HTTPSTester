@@ -3,7 +3,6 @@ dnspython
 requests
 psycopg2
 tldextract
-threading
 queue
 logger
 dns
