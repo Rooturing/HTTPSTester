@@ -8,7 +8,7 @@ import time, threading
 from queue import Queue
 
 SHARE_Q = Queue()
-WORKER_THREAD_NUM = 20
+WORKER_THREAD_NUM = 40
 
 headers = {
     'Pragma': 'no-cache',
@@ -111,15 +111,11 @@ class MyThread(threading.Thread):
 
 def worker():
     global SHARE_Q
-    while True:
-        if not SHARE_Q.empty():
-            item = SHARE_Q.get()
-            print("processing: "+item)
-            run_test(item)
-            time.sleep(1)
-            SHARE_Q.task_done()
-        else:
-            break
+    while not SHARE_Q.empty():
+        item = SHARE_Q.get()
+        print("processing: "+item)
+        run_test(item)
+        SHARE_Q.task_done()
 
 def test_https(domain, domains): 
     
@@ -137,10 +133,11 @@ def test_https(domain, domains):
         thread = MyThread(worker)
         thread.start()
         threads.append(thread)
+    startTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     for thread in threads:
         thread.join()
-    SHARE_Q.join()
-
+    endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    print('all done! start: '+startTime+', end:'+endTime)
     
     f.write('http_default:\n'+'\t'+', '.join(http_default)+'\n')
     f.write('http_only:\n'+'\t'+', '.join(http_only)+'\n')

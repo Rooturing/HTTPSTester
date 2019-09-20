@@ -29,6 +29,8 @@ def read_domains(filename):
         return re.findall('(.*)\n', text)
 
 def init_dir():
+    if not os.path.exists('util/log'):
+        os.mkdir('util/log')
     if not os.path.exists('domain'):
         os.mkdir('domain')
     if not os.path.exists('domain/crtsh'):

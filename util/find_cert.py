@@ -11,40 +11,17 @@ from collections import Counter
 import time, threading
 from queue import Queue
 import logging
-from count_cert import count_cert
 
+logging.basicConfig(filename='util/log/get_cert_from_'+domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
 SHARE_Q = Queue()
 WORKER_THREAD_NUM = 30
 out_text = []
+
 
 def read_domains(filename):
     with open(filename) as f:
         text = f.read()        
         return re.findall('(.*)\n', text)
-
-def write_DNSres(domain, domain_names):
-    with open("dns_result/"+domain+"_DNSres.txt", "w") as f:
-        for domain in domain_names:
-            try:
-                A = dns.resolver.query(domain, "A")
-                for i in A.response.answer:
-                    f.write(str(i)+'\n')
-                f.write('\n')
-            except Exception as e:
-                print(e)
-                f.write("NXDOMAIN for "+domain+'\n\n')
-
-def write_NameServer(domain_names):
-    with open("NameServer.txt", "w") as f:
-        for domain in domain_names:
-            try:
-                NS = dns.resolver.query(domain, "NS")
-                for i in NS.response.answer:
-                    f.write(str(i)+'\n')
-                f.write('\n')
-            except Exception as e:
-                print(e)
-                f.write("Can't find nameserver for "+domain+'\n\n')
 
 def find_IP(filename):
     with open(filename) as f:
@@ -132,7 +109,7 @@ def ip_worker():
             break
 
 def get_cert_from_domains(domain, domain_list):
-    with open("cert_from_domain/"+domain+".txt","w") as f:
+    with open("report/cert/cert_from_domain/"+domain+"_fd.txt","w") as f:
         global SHARE_Q
         global out_text
         threads = []
@@ -148,7 +125,7 @@ def get_cert_from_domains(domain, domain_list):
         f.write('\n'.join(out_text))
 
 def get_cert_from_IP(domain, ip_list):
-    with open("cert_from_ip/"+domain+".txt","w") as f:
+    with open("report/cert/cert_from_ip/"+domain+"_fi.txt","w") as f:
         global SHARE_Q
         global out_text
         threads = []
@@ -177,10 +154,10 @@ def query_cert(serial_num):
         print("\nerror"+str(e)+", cert: "+serial_num)
         return res
 
-def search_cert(cert_list,domain):
+def search_cert_in_ct(cert_list,domain):
     print("total cert input: %d"%len(cert_list))
     cert_found = []
-    f = open("cert_ct/"+domain+".txt","w")
+    f = open("report/cert/cert_ct/"+domain+"_ct.txt","w")
     for cert in cert_list.keys():
         if len(cert)%2:
             serial_num = '0'+cert
@@ -203,12 +180,10 @@ def search_cert(cert_list,domain):
 
 if __name__ == "__main__":
     domain = sys.argv[1]
-    #domain = "sjtu.edu.cn"
-    logging.basicConfig(filename='log/'+str(time.time())+"."+domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
 
     #ip_list = find_IP("fulldomain/dnsres/"+domain+"_DNSres.txt")
     #get_cert_from_IP(domain, ip_list)
 
     get_cert_from_domains(domain, read_domains("fulldomain/resolved_domain/"+domain+".txt"))
     
-    search_cert(count_cert("cert_from_domain/"+domain+".txt"),domain)
+    search_cert_in_ct(count_cert("cert_from_domain/"+domain+".txt"),domain)

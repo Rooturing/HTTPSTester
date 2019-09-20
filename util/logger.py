@@ -10,7 +10,7 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
 LOG_FILE = True
 if LOG_FILE:
-    fh = logging.FileHandler('util/log/log.log')
+    fh = logging.FileHandler('util/log/crtsh.log')
     fh.setLevel( logging.DEBUG )
     fh.setFormatter(formatter)
     logger.addHandler(fh)

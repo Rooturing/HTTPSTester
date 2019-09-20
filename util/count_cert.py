@@ -18,6 +18,12 @@ def count_cert(filename):
         print("get %d certs from %d domains"%(len(cert_list),len(domain)))
         return cert_list
 
+def count_cert_fd(domain):
+    return count_cert("report/cert/cert_from_domain/"+domain+"_fd.txt")
+
+def count_cert_fi(domain):
+    return count_cert("report/cert/cert_from_ip/"+domain+"_fp.txt")
+
 def load_cert_ct(filename):
     with open(filename) as f:
         text = f.read()
@@ -60,13 +66,10 @@ def find_CA(cert_list,where_from):
     plt.legend(loc='upper left',bbox_to_anchor=(-0.3,1),fontsize=10)
     plt.title('CA used by '+domain.split('.')[0],fontsize=15)
     plt.show()
-    plt.savefig("pic/"+domain+"_"+where_from+".png")
+    if not os.path.exists('report/pic/'+domain):
+        os.mkdir('report/pic/'+domain)
+    plt.savefig("report/pic/"+domain+"/cert_CA_"+where_from+".png")
 
-def count_cert_from_ip(cert_list):
-    find_CA(cert_list,"from_ip")
-
-def count_cert_from_domain(cert_list):
-    find_CA(cert_list,"from_domain")
 
 def compare_cert_difference(certfd,certfi):
     #print(certfd)
@@ -89,10 +92,11 @@ def find_shared_cert(cl):
             print("serial number: %s, domain numbers: %d, CA: %s"%(c[0],len(c[1]['domains']),c[1]['CA']))
             sc.append(c)
     print("total shared %d cert found: "%len(sc))
+    with open('report/cert/shared_cert/'+domain+"_sc.txt",'w') as f:
+        f.write('\n'.join(sc))
 
 def count_cert_in_ct(domain,certfd):
-    cert_list = count_cert("cert_from_domain/"+domain+".txt")
-    (fnd, nfnd) = load_cert_ct("cert_ct/"+domain+".txt")
+    (fnd, nfnd) = load_cert_ct("report/cert/cert_ct/"+domain+"_ct.txt")
     cert_in_ct = {'equals2':[],'equals1':[],'equals0':[],'more_than2':[]}
     for c in fnd:
         ctr = re.findall(r'\((.*?)\)',c[1])
@@ -114,7 +118,6 @@ if __name__ == "__main__":
     #domain = 'sjtu.edu.cn'
     certfd = count_cert("cert_from_domain/"+domain+".txt")
     #certfi = count_cert("cert_from_ip/"+domain+".txt")
-    count_cert_from_domain(certfd)
     #count_cert_from_ip(certfi)
     #compare_cert_difference(certfd,certfi)
     find_shared_cert(certfd)
