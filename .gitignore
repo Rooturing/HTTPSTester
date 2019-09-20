@@ -4,5 +4,5 @@
 *.png
 *.txt
 *.csv
-*/pic/*
+report/pic/*
 __pycache__
