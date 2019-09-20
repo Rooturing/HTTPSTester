@@ -3,7 +3,5 @@ dnspython
 requests
 psycopg2
 tldextract
-queue
 logger
-dns
 requests
