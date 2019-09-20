@@ -19,6 +19,7 @@ This program contains three parts:
 - get_report_from_ssllab.py: Query the SSL Labs' API and get a detailed report.
 
 ### Usage
+`pip3 install -r requirements`
 
 ##### First step：
 
