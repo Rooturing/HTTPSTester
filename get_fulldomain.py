@@ -1,5 +1,6 @@
 import sys
 sys.path.append("util")
+import os
 import re
 import requests
 from Sublist3r import sublist3r
@@ -27,10 +28,19 @@ def read_domains(filename):
         text = f.read().strip()        
         return re.findall('(.*)\n', text)
 
-
+def init_dir():
+    if not os.path.exists('domain'):
+        os.mkdir('domain')
+    if not os.path.exists('domain/crtsh'):
+        os.mkdir('domain/crtsh')
+    if not os.path.exists('domain/resolved_domain'):
+        os.mkdir('domain/resolved_domain')
+    if not os.path.exists('domain/dnsres'):
+        os.mkdir('domain/dnsres')
+    if not os.path.exists('domain/fulldomain'):
+        os.mkdir('domain/fulldomain')
 if __name__ == "__main__":
-
-
+    init_dir()
     domains = sys.argv[1:]
     crt = crtsh_db()
     for domain in domains:

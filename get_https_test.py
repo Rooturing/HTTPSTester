@@ -1,4 +1,5 @@
 import requests
+import os
 import re
 import logging
 import time
@@ -152,8 +153,15 @@ def test_https(domain, domains):
 
     f.close()
 
+def init_dir():
+    if not os.path.exists('report'):
+        os.mkdir('report')
+    if not os.path.exists('report/test_https'):
+        os.mkdir('report/test_https')
+        os.mkdir('report/test_https/log')
+
 if __name__ == "__main__":
-    
+    init_dir()
     domain_list = sys.argv[1:]
     for domain in domain_list:
         logging.basicConfig(filename='report/test_https/log/'+str(time.time())+"."+domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')

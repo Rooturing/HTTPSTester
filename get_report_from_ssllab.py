@@ -30,21 +30,33 @@ def write_error_domains(domain, domains):
 def get_report(domain):
     with open("report/test_https/"+domain+".txt") as f:
         lines = f.read().split('\n')
-        http_default = lines[1].strip().split(', ')
-        http_only = lines[3].strip().split(', ')
-        https_reachable = lines[5].strip().split(', ')
-        https_default = lines[7].strip().split(', ')
-        https_only = lines[9].strip().split(', ')
-        https_error = lines[11].strip().split(', ')
-        unreachable = lines[13].strip().split(', ')
-        print("http_default: %d"%len(http_default))
-        print("http_only: %d"%len(http_only))
-        print("https_reachable: %d"%len(https_reachable))
-        print("https_default: %d"%len(https_default))
-        print("https_only: %d"%len(https_only))
-        print("https_error: %d"%len(https_error))
-        print("unreachable: %d"%len(unreachable))
-        print("total: %d"%(len(http_default)+len(http_only)+len(https_reachable)+len(https_default)+len(https_only)+len(https_error)+len(unreachable)))
+        http_default = lines[1].strip().split(', ').remove('')
+        http_only = lines[3].strip().split(', ').remove('')
+        https_reachable = lines[5].strip().split(', ').remove('')
+        https_default = lines[7].strip().split(', ').remove('')
+        https_only = lines[9].strip().split(', ').remove('')
+        https_error = lines[11].strip().split(', ').remove('')
+        unreachable = lines[13].strip().split(', ').remove('')
+        len_http_default = len(http_default) if http_default else 0
+        len_http_only = len(http_only) if http_only else 0
+        len_https_reachable = len(https_reachable) if https_reachable else 0
+        len_https_default = len(https_default) if https_default else 0
+        len_https_only = len(https_only) if https_only else 0
+        len_https_error = len(https_error) if https_error else 0
+        len_unreachable = len(unreachable) if unreachable else 0
+        print("http_default: %d"%len_http_default)
+        print("http_only: %d"%len_http_only)
+        print("https_reachable: %d"%len_https_reachable)
+        print("https_default: %d"%len_https_default)
+        print("https_only: %d"%len_https_only)
+        print("https_error: %d"%len_https_error)
+        print("unreachable: %d"%len_unreachable)
+        all_length = len_http_default+len_http_only+len_https_reachable+len_https_default+len_https_only+len_https_error+len_unreachable
+        if all_length:
+            print("total: %d"%(all_length))
+        else:
+            print("no domain tested")
+            sys.exit()
         all_domains = http_default + http_only + https_reachable + https_default + https_only + del_error_message(https_error) + del_error_message(unreachable)
         domain_set = set(all_domains)
         return (https_default,https_reachable,https_error,https_only,http_only,unreachable)
@@ -78,14 +90,26 @@ def get_error_map(https_error):
             labels.append(error)
         else:
             err_map[error].add(d)
-    with open("report/error_reason/"+domain+"_err_map.txt","w") as f:
+    with open("report/error_domain/"+domain+"_err_reason_map.txt","w") as f:
         for k in err_map:
             f.write(k+":\n")
             f.write('\t'+str(err_map[k])+'\n')
     return err_map
 
+def init_dir():
+    if not os.path.exists('report'):
+        os.mkdir('report')
+    if not os.path.exists('report/error_domain'):
+        os.mkdir('report/error_domain')
+    if not os.path.exists('report/pic'):
+        os.mkdir('report/pic')
+    if not os.path.exists('report/ssllab'):
+        os.mkdir('report/ssllab')
+    if not os.path.exists('report/ssllab/raw_results'):
+        os.mkdir('report/ssllab/raw_results')
 
 if __name__ == "__main__":
+    init_dir()
     domains = sys.argv[1:]
     for domain in domains: 
         (https_default,https_reachable,https_error,https_only,http_only,unreachable) = get_report(domain)
