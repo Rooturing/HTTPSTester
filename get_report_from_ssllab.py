@@ -30,13 +30,13 @@ def write_error_domains(domain, domains):
 def get_report(domain):
     with open("report/test_https/"+domain+".txt") as f:
         lines = f.read().split('\n')
-        http_default = lines[1].strip().split(', ').remove('')
-        http_only = lines[3].strip().split(', ').remove('')
-        https_reachable = lines[5].strip().split(', ').remove('')
-        https_default = lines[7].strip().split(', ').remove('')
-        https_only = lines[9].strip().split(', ').remove('')
-        https_error = lines[11].strip().split(', ').remove('')
-        unreachable = lines[13].strip().split(', ').remove('')
+        http_default = lines[1].strip().split(', ')
+        http_only = lines[3].strip().split(', ')
+        https_reachable = lines[5].strip().split(', ')
+        https_default = lines[7].strip().split(', ')
+        https_only = lines[9].strip().split(', ')
+        https_error = lines[11].strip().split(', ')
+        unreachable = lines[13].strip().split(', ')
         len_http_default = len(http_default) if http_default else 0
         len_http_only = len(http_only) if http_only else 0
         len_https_reachable = len(https_reachable) if https_reachable else 0
