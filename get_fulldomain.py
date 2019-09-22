@@ -46,7 +46,7 @@ if __name__ == "__main__":
     domains = sys.argv[1:]
     crt = crtsh_db()
     for domain in domains:
-        crt.write_domain(domain)
+        crt.write_domain("."+domain)
         findSubdoamin(domain, read_domains("domain/crtsh/"+domain+".txt"))
         sorted_d = sort_domains(domain)
         print("Finding DNS record for domian %s" % domain)

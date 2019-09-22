@@ -8,7 +8,7 @@ import time, threading
 from queue import Queue
 
 SHARE_Q = Queue()
-WORKER_THREAD_NUM = 40
+WORKER_THREAD_NUM = 20 
 
 headers = {
     'Pragma': 'no-cache',
@@ -49,7 +49,7 @@ def run_test(domain):
     global http_default,http_only,https_reachable,https_default,https_only,https_error,unreachable
     if True:
         try:
-            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers)
+            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=3)
             http_status = str(res1.status_code)
             url = res1.url
             if re.match(r"^2",http_status):
@@ -60,7 +60,7 @@ def run_test(domain):
                     http_default.append(domain)
                     logging.info(domain+" use default http.")
                     try:
-                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers)
+                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=5)
                         http_status = str(res2.status_code)
                         logging.info("testing if https is available..")
                         if re.match(r"^2",http_status):
@@ -85,7 +85,7 @@ def run_test(domain):
                 get_https_error(domain, str(e))
             else:
                 try:
-                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers)
+                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=3)
                     http_status = str(res2.status_code)
                     logging.info("testing if https is available..")
                     if re.match(r"^2",http_status):
@@ -114,7 +114,11 @@ def worker():
     while not SHARE_Q.empty():
         item = SHARE_Q.get()
         print("processing: "+item)
+        print("queue size: "+str(SHARE_Q.qsize()))
         run_test(item)
+        time.sleep(1)
+        print("task done for domain: "+item)
+        print("queue size: "+str(SHARE_Q.qsize()))
         SHARE_Q.task_done()
 
 def test_https(domain, domains): 
