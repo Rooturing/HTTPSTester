@@ -12,7 +12,6 @@ import time, threading
 from queue import Queue
 import logging
 
-logging.basicConfig(filename='util/log/get_cert_from_'+domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
 SHARE_Q = Queue()
 WORKER_THREAD_NUM = 30
 out_text = []
@@ -30,45 +29,47 @@ def find_IP(filename):
         return set(res)
 
 def domain_ssl_connect(domain):            
-        try:
-            sslcontext = Context(TLSv1_METHOD)
-            sslcontext.set_timeout(30)
-            s = socket()
-            s.connect((domain, 443))
-            c = Connection(sslcontext, s)
-            c.set_connect_state()
-            c.set_tlsext_host_name(domain.encode('utf-8'))
-            logging.info("try to establish handshake with %s..." % domain)
-            c.do_handshake()
-            cert = c.get_peer_certificate()
-            logging.info("got certificate!")
-            c.shutdown()
-            s.close()
-            return cert
-        except Exception as e:
-            logging.info(e)
-            logging.info("fail to connect to port 443 with %s" % domain)
-            return None
+    logging.basicConfig(filename='util/log/get_cert_from_'+domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+    try:
+        sslcontext = Context(TLSv1_METHOD)
+        sslcontext.set_timeout(30)
+        s = socket()
+        s.connect((domain, 443))
+        c = Connection(sslcontext, s)
+        c.set_connect_state()
+        c.set_tlsext_host_name(domain.encode('utf-8'))
+        logging.info("try to establish handshake with %s..." % domain)
+        c.do_handshake()
+        cert = c.get_peer_certificate()
+        logging.info("got certificate!")
+        c.shutdown()
+        s.close()
+        return cert
+    except Exception as e:
+        logging.info(e)
+        logging.info("fail to connect to port 443 with %s" % domain)
+        return None
 
-def ip_ssl_connect(ipp):            
-        try:
-            sslcontext = Context(TLSv1_METHOD)
-            sslcontext.set_timeout(30)
-            s = socket()
-            s.connect((ip, 443))
-            c = Connection(sslcontext, s)
-            c.set_connect_state()
-            logging.info("try to establish handshake with %s..." % ip)
-            c.do_handshake()
-            cert = c.get_peer_certificate()
-            logging.info("got certificate!")
-            c.shutdown()
-            s.close()
-            return cert
-        except Exception as e:
-            logging.info(e)
-            logging.info("fail to connect to port 443 with %s" % ip)
-            return None
+def ip_ssl_connect(ip):            
+    logging.basicConfig(filename='util/log/get_cert_from_'+ip+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+    try:
+        sslcontext = Context(TLSv1_METHOD)
+        sslcontext.set_timeout(30)
+        s = socket()
+        s.connect((ip, 443))
+        c = Connection(sslcontext, s)
+        c.set_connect_state()
+        logging.info("try to establish handshake with %s..." % ip)
+        c.do_handshake()
+        cert = c.get_peer_certificate()
+        logging.info("got certificate!")
+        c.shutdown()
+        s.close()
+        return cert
+    except Exception as e:
+        logging.info(e)
+        logging.info("fail to connect to port 443 with %s" % ip)
+        return None
 
 class MyThread(threading.Thread):
     def __init__(self,func):
@@ -81,32 +82,30 @@ class MyThread(threading.Thread):
 def domain_worker():
     global SHARE_Q
     global out_text
-    while True:
-        if not SHARE_Q.empty():
-            item = SHARE_Q.get()
-            print("processing: "+item)
-            cert = domain_ssl_connect(item)
-            if cert:
-                out_text.append("certfrom "+item+": serial number->"+str(hex(cert.get_serial_number()))+", issuer->"+str(cert.get_issuer())+", subject->"+str(cert.get_subject())+"\n")
-            time.sleep(1)
-            SHARE_Q.task_done()
-        else:
-            break
+    while not SHARE_Q.empty():
+        item = SHARE_Q.get()
+        print("processing: "+item)
+        cert = domain_ssl_connect(item)
+        if cert:
+            out_text.append("certfrom "+item+": serial number->"+str(hex(cert.get_serial_number()))+", issuer->"+str(cert.get_issuer())+", subject->"+str(cert.get_subject())+"\n")
+        time.sleep(1)
+        print("task done for: "+item)
+        print("queue size: "+str(SHARE_Q.qsize()))
+        SHARE_Q.task_done()
 
 def ip_worker():
     global SHARE_Q
     global out_text
-    while True:
-        if not SHARE_Q.empty():
-            item = SHARE_Q.get()
-            print("processing: "+item)
-            cert = ip_ssl_connect(item)
-            if cert:
-                out_text.append("certfrom "+item+": serial number->"+str(hex(cert.get_serial_number()))+", issuer->"+str(cert.get_issuer())+", subject->"+str(cert.get_subject())+"\n")
-            time.sleep(1)
-            SHARE_Q.task_done()
-        else:
-            break
+    while not SHARE_Q.empty():
+        item = SHARE_Q.get()
+        print("processing: "+item)
+        ert = ip_ssl_connect(item)
+        if cert:
+            out_text.append("certfrom "+item+": serial number->"+str(hex(cert.get_serial_number()))+", issuer->"+str(cert.get_issuer())+", subject->"+str(cert.get_subject())+"\n")
+        time.sleep(1)
+        print("task done for: "+item)
+        print("queue size: "+str(SHARE_Q.qsize()))
+        SHARE_Q.task_done()
 
 def get_cert_from_domains(domain, domain_list):
     with open("report/cert/cert_from_domain/"+domain+"_fd.txt","w") as f:
@@ -121,7 +120,6 @@ def get_cert_from_domains(domain, domain_list):
             threads.append(thread)
         for thread in threads:
             thread.join()
-        SHARE_Q.join()
         f.write('\n'.join(out_text))
 
 def get_cert_from_IP(domain, ip_list):
@@ -184,6 +182,6 @@ if __name__ == "__main__":
     #ip_list = find_IP("fulldomain/dnsres/"+domain+"_DNSres.txt")
     #get_cert_from_IP(domain, ip_list)
 
-    get_cert_from_domains(domain, read_domains("fulldomain/resolved_domain/"+domain+".txt"))
+    #get_cert_from_domains(domain, read_domains("fulldomain/resolved_domain/"+domain+".txt"))
     
-    search_cert_in_ct(count_cert("cert_from_domain/"+domain+".txt"),domain)
+    #search_cert_in_ct(count_cert("cert_from_domain/"+domain+".txt"),domain)

@@ -31,7 +31,7 @@ def load_cert_ct(filename):
         nfnd = re.findall(r'not found, cert: (.*)\n',text)
     return (fnd, nfnd)
 
-def find_CA(cert_list,where_from):
+def find_CA(domain,cert_list,where_from):
     CA_counter = {}
     for i in cert_list.values():
         CA = re.findall(r"CN=(.*)",i['CA'])[0]
@@ -65,10 +65,8 @@ def find_CA(cert_list,where_from):
     plt.pie(x=fracs,labels=labels,autopct='%3.1f%%',startangle=90,pctdistance=0.8,labeldistance=1.1,rotatelabels=10,radius=0.68)
     plt.legend(loc='upper left',bbox_to_anchor=(-0.3,1),fontsize=10)
     plt.title('CA used by '+domain.split('.')[0],fontsize=15)
-    plt.show()
-    if not os.path.exists('report/pic/'+domain):
-        os.mkdir('report/pic/'+domain)
-    plt.savefig("report/pic/"+domain+"/cert_CA_"+where_from+".png")
+    plt.savefig("report/pic/"+domain+"/"+domain+"cert_CA_"+where_from+".png")
+    return sorted_CA
 
 
 def compare_cert_difference(certfd,certfi):
@@ -85,15 +83,16 @@ def compare_cert_difference(certfd,certfi):
     for c in dc2:
         print("\tserial number: "+str(c)+", domains: "+str(certfi[c]))
 
-def find_shared_cert(cl):
+def find_shared_cert(domain,cl):
     sc = []
     for c in cl.items():
         if len(c[1]['domains'])>1:
-            print("serial number: %s, domain numbers: %d, CA: %s"%(c[0],len(c[1]['domains']),c[1]['CA']))
+            #print("serial number: %s, domain numbers: %d, CA: %s"%(c[0],len(c[1]['domains']),c[1]['CA']))
             sc.append(c)
-    print("total shared %d cert found: "%len(sc))
+    print("total shared-certs found: %d"%len(sc))
     with open('report/cert/shared_cert/'+domain+"_sc.txt",'w') as f:
-        f.write('\n'.join(sc))
+        f.write(str(sc)+'\n')
+    return sc
 
 def count_cert_in_ct(domain,certfd):
     (fnd, nfnd) = load_cert_ct("report/cert/cert_ct/"+domain+"_ct.txt")
@@ -108,14 +107,16 @@ def count_cert_in_ct(domain,certfd):
             cert_in_ct['more_than2'].append(c)
     for c in nfnd:
         cert_in_ct['equals0'].append(c)
-    for i in cert_in_ct['equals0']:
-        print("serial number: "+i+", "+str(certfd[i]))
+    with open("report/cert/cert_ct/"+domain+"_notInCT.txt",'w') as f:
+        for i in cert_in_ct['equals0']:
+            f.write("serial number: "+i+", "+str(certfd[i])+'\n')
     print('total number of cert is %d, %d not found in ct'%(len(fnd)+len(nfnd),len(nfnd)))
+    ct_map = {'cert_found':fnd,'cert_not_found':nfnd}
+    return ct_map
 
 
 if __name__ == "__main__":
     domain = sys.argv[1] 
-    #domain = 'sjtu.edu.cn'
     certfd = count_cert("cert_from_domain/"+domain+".txt")
     #certfi = count_cert("cert_from_ip/"+domain+".txt")
     #count_cert_from_ip(certfi)

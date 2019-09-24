@@ -50,8 +50,7 @@ def draw_ip_map(domain_list,domain):
     plt.pie(x=fracs,labels=labels,autopct='%3.1f%%',startangle=90,pctdistance=0.8,labeldistance=1.1,rotatelabels=10,radius=0.68)
     plt.legend(loc='upper left',bbox_to_anchor=(-0.3,1),fontsize=15)
     plt.title('error IPs',fontsize=15)
-    plt.show()
-    plt.savefig("pic/"+domain+"_error_ip.png")
+    plt.savefig("report/pic/"+domain+"/"+domain+"_error_ip.png")
 
 def draw_error_reason(domain_list,domain):
     addups = []
@@ -71,8 +70,7 @@ def draw_error_reason(domain_list,domain):
     plt.title("error reasons")
     for x,y in enumerate(count):
         plt.text(y+0.2,x-0.1,'%s'%y)
-    plt.show()
-    plt.savefig("pic/"+domain+"_error_reason.png",bbox_inches='tight')
+    plt.savefig("report/pic/"+domain+"/"+domain+"_error_reason.png",bbox_inches='tight')
 
 def draw_error_cert(domain_list,domain):
     addups = {}
@@ -99,8 +97,7 @@ def draw_error_cert(domain_list,domain):
     plt.pie(x=fracs,labels=labels,autopct='%3.1f%%',startangle=90,pctdistance=0.8,labeldistance=1.1,rotatelabels=10,radius=0.68)
     plt.legend(loc='upper left',bbox_to_anchor=(-0.3,1),fontsize=15)
     plt.title('common name of error cert',fontsize=15)
-    plt.show()
-    plt.savefig("pic/"+domain+"_error_cn.png")
+    plt.savefig("report/pic/"+domain+"/"+domain+"_error_cn.png")
 
 if __name__ == "__main__":
     domain = sys.argv[1]
