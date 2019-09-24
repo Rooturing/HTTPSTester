@@ -91,21 +91,20 @@ if __name__=='__main__':
         #draw_error_cert(dlist,domain)
 
         #count the relationships between domain and ip
-        out_map['ip_DNS_map'] = count_domains_ip_fromDNS(domain)
+        count_domains_ip_fromDNS(domain)
         #try to connect each domain's 443 port (use tls sni extension)
-        get_cert_from_domains(domain, read_domains("domain/resolved_domain/"+domain+".txt"))
+        #get_cert_from_domains(domain, read_domains("domain/resolved_domain/"+domain+".txt"))
         certfd = count_cert_fd(domain)
         #find shared cert between different domains
-        out_map['shared_cert_map'] = find_shared_cert(domain,certfd)
+        out_map['shared_cert'] = find_shared_cert(domain,certfd)
         #draw the piechar for certs' CA map
-        out_map['ca_map'] = find_CA(domain,certfd,'fd')
+        out_map['CA'] = find_CA(domain,certfd,'fd')
         #search if the certificate was logged in CT
-        search_cert_in_ct(certfd,domain)
+        #search_cert_in_ct(certfd,domain)
         #count the number of logged certs in CT, write down the not logged ones
-        out_map['ct_map'] = count_cert_in_ct(domain,certfd)
+        out_map['CT'] = count_cert_in_ct(domain,certfd)
 
         #output the final result in json
-        print(json.dumps(out_map))
         with open('report/chart/'+domain+".json","w") as f:
             json.dump(out_map,f)
 

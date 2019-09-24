@@ -29,7 +29,6 @@ def count_domains_ip_fromDNS(domain):
             f.write(str(k[0])+"\n")
             f.write("\t"+str(k[1])+"\n")
     ip_DNS_map = {'ip_domain':ip_domain_map,'domain_ip':domain_ip_map}
-    return ip_DNS_map
 
 def read_file(filename):
     with open(filename) as f:

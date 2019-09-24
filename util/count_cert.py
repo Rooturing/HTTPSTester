@@ -42,7 +42,6 @@ def find_CA(domain,cert_list,where_from):
     sorted_CA = sorted(CA_counter.items(),key=lambda item:item[1],reverse=True)
     print('total unique certs: %d'%len(cert_list))
     print('total CAs found: %d'%len(CA_counter))
-    print(sorted_CA)
     
     labels = []
     fracs = []
@@ -53,12 +52,6 @@ def find_CA(domain,cert_list,where_from):
             fracs.append(i[1])
         else:
             others += 1
-    #if len(labels) == 1:
-    #    for i in sorted_CA:
-    #        if i[1] == 1:
-    #            labels.append(' '.join(i[0].split(' ')[:2]).split('/')[0] if len(i[0])>30 else i[0])
-    #            fracs.append(i[1])
-    #else:
     labels.append('others')
     fracs.append(others)
     fig = plt.figure(figsize=(12,10))
@@ -66,7 +59,11 @@ def find_CA(domain,cert_list,where_from):
     plt.legend(loc='upper left',bbox_to_anchor=(-0.3,1),fontsize=10)
     plt.title('CA used by '+domain.split('.')[0],fontsize=15)
     plt.savefig("report/pic/"+domain+"/"+domain+"cert_CA_"+where_from+".png")
-    return sorted_CA
+
+    CA = {}
+    for i in sorted_CA:
+        CA[i[0]]=i[1]
+    return CA
 
 
 def compare_cert_difference(certfd,certfi):
@@ -87,12 +84,11 @@ def find_shared_cert(domain,cl):
     sc = []
     for c in cl.items():
         if len(c[1]['domains'])>1:
-            #print("serial number: %s, domain numbers: %d, CA: %s"%(c[0],len(c[1]['domains']),c[1]['CA']))
             sc.append(c)
     print("total shared-certs found: %d"%len(sc))
     with open('report/cert/shared_cert/'+domain+"_sc.txt",'w') as f:
         f.write(str(sc)+'\n')
-    return sc
+    return len(sc)
 
 def count_cert_in_ct(domain,certfd):
     (fnd, nfnd) = load_cert_ct("report/cert/cert_ct/"+domain+"_ct.txt")
@@ -111,8 +107,9 @@ def count_cert_in_ct(domain,certfd):
         for i in cert_in_ct['equals0']:
             f.write("serial number: "+i+", "+str(certfd[i])+'\n')
     print('total number of cert is %d, %d not found in ct'%(len(fnd)+len(nfnd),len(nfnd)))
-    ct_map = {'cert_found':fnd,'cert_not_found':nfnd}
-    return ct_map
+    print('however, %d cert(s) have over 2 results'%len(cert_in_ct['more_than2']))
+    CT = {'0':len(cert_in_ct['equals0']),'1':len(cert_in_ct['equals1']),'2':len(cert_in_ct['equals2']),'>2':len(cert_in_ct['more_than2'])}
+    return CT
 
 
 if __name__ == "__main__":
