@@ -12,16 +12,17 @@ This program tests a website' deployment of HTTPS, including subdomains. We defi
 - HTTPS_error: Although the website support HTTPS (whether HTTPS_default/reachable), error(s) occurred (e.g. certificate verify failed).
 - unreachable: The website return HTTP error code such as 404, 500.
 
-This program contains three parts:
+This program contains four parts:
 
 - get_fulldomains.py: Use crt.sh and Sublist3r to get all subdomains from the inputed domain name(s).
 - get_https_test.py: Test what HTTPS deployment category the domain belongs to.
 - get_report_from_ssllab.py: Query the SSL Labs' API and get a detailed report.
+- generate_full_report.py: Sum up the report, draw piechart, and output json file.
 
 ### Usage
 `pip3 install -r requirements`
 
-##### First step：
+###### First step：
 
 `python3 get_fulldomains.py example.com`
 
