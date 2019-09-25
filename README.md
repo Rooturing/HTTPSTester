@@ -25,18 +25,26 @@ This program contains three parts:
 
 `python3 get_fulldomains.py example.com`
 
-The result will be saved at folder 'domain/fulldomain'
+The result will be saved at folder 'domain/fulldomain'.
 
 ###### Second step:
 
 `python3 get_https_test.py example.com`
 
-The result will be saved at folder 'report/test_https'
+The result will be saved at folder 'report/test_https'.
 
-###### Third srep:
+###### Third step:
 
 `python3 get_report_from_ssllab.py example.com`
 
-The result will be saved at folder 'report/ssllab'
+The result will be saved at folder 'report/ssllab'.
 
+###### Fourth step:
 
+`python3 generate_full_report.py example.com`
+
+The program will sum up of the tested results and output piechar as well as json file in the 'report/pic (and chart)' directory.
+
+###### Further work
+
+Figure out ways to test if there exists login window in the domain we test.

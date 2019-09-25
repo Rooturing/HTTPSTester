@@ -82,25 +82,25 @@ if __name__=='__main__':
         draw_overall_pie(https_test,domain)
 
         ##parse the report from ssllab and draw piechar
-        #dlist = read_csv("report/ssllab/"+domain+"_error.csv")
+        dlist = read_csv("report/ssllab/"+domain+"_error.csv")
         ##draw the piechar of error domain's ip
-        #draw_ip_map(dlist,domain)
+        draw_ip_map(dlist,domain)
         ##draw the most common HTTPS error reasons reported
-        #draw_error_reason(dlist,domain)
+        draw_error_reason(dlist,domain)
         ##draw the common names of error certs
-        #draw_error_cert(dlist,domain)
+        draw_error_cert(dlist,domain)
 
         #count the relationships between domain and ip
         count_domains_ip_fromDNS(domain)
         #try to connect each domain's 443 port (use tls sni extension)
-        #get_cert_from_domains(domain, read_domains("domain/resolved_domain/"+domain+".txt"))
+        get_cert_from_domains(domain, read_domains("domain/resolved_domain/"+domain+".txt"))
         certfd = count_cert_fd(domain)
         #find shared cert between different domains
         out_map['shared_cert'] = find_shared_cert(domain,certfd)
         #draw the piechar for certs' CA map
         out_map['CA'] = find_CA(domain,certfd,'fd')
         #search if the certificate was logged in CT
-        #search_cert_in_ct(certfd,domain)
+        search_cert_in_ct(certfd,domain)
         #count the number of logged certs in CT, write down the not logged ones
         out_map['CT'] = count_cert_in_ct(domain,certfd)
 
