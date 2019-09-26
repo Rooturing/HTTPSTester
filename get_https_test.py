@@ -8,6 +8,7 @@ import time, threading
 from queue import Queue
 import json
 
+
 SHARE_Q = Queue()
 WORKER_THREAD_NUM = 20 
 
@@ -45,7 +46,7 @@ def run_test(domain):
     global https_test
     if True:
         try:
-            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=3)
+            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=10)
             http_status = str(res1.status_code)
             url = res1.url
             if re.match(r"^2",http_status):
@@ -56,7 +57,7 @@ def run_test(domain):
                     https_test['http_default'].append(domain)
                     logging.info(domain+" use default http.")
                     try:
-                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=5)
+                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=10)
                         http_status = str(res2.status_code)
                         logging.info("testing if https is available..")
                         if re.match(r"^2",http_status):
@@ -81,7 +82,7 @@ def run_test(domain):
                 get_https_error(domain, str(e))
             else:
                 try:
-                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=3)
+                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=10)
                     http_status = str(res2.status_code)
                     logging.info("testing if https is available..")
                     if re.match(r"^2",http_status):
