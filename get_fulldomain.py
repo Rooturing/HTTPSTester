@@ -29,8 +29,6 @@ def read_domains(filename):
         return re.findall('(.*)\n', text)
 
 def init_dir():
-    if not os.path.exists('util/log'):
-        os.mkdir('util/log')
     if not os.path.exists('domain'):
         os.mkdir('domain')
     if not os.path.exists('domain/crtsh'):
@@ -44,8 +42,8 @@ def init_dir():
 if __name__ == "__main__":
     init_dir()
     domains = sys.argv[1:]
-    crt = crtsh_db()
     for domain in domains:
+        crt = crtsh_db()
         crt.write_domain("."+domain)
         findSubdoamin(domain, read_domains("domain/crtsh/."+domain+".txt"))
         sorted_d = sort_domains(domain)
@@ -54,5 +52,6 @@ if __name__ == "__main__":
         print("DNS records have been written, finding resolved domains")
         count = get_resolved_domains(domain)
         print("Done! Total %d resolved domains for %s found!"%(count,domain))
+        del crt
 
     

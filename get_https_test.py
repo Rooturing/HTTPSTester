@@ -1,4 +1,5 @@
 import requests
+import random
 import os
 import re
 import logging
@@ -10,7 +11,7 @@ import json
 
 
 SHARE_Q = Queue()
-WORKER_THREAD_NUM = 20 
+WORKER_THREAD_NUM = 30 
 
 headers = {
     'Pragma': 'no-cache',
@@ -21,7 +22,7 @@ headers = {
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
     'Connection':'close'}
 
-https_test = {'http_default':[],'http_only':[],'https_reachable':[],'https_default':[],'https_only':[],'https_error':[],'unreachable':[]}
+https_test = {'https_default':[],'http_default':[],'https_reachable':[],'http_only':[],'https_only':[],'https_error':[],'unreachable':[]}
 
 def read_domains(filename):
     with open(filename) as f:
@@ -46,7 +47,7 @@ def run_test(domain):
     global https_test
     if True:
         try:
-            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=10)
+            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=60)
             http_status = str(res1.status_code)
             url = res1.url
             if re.match(r"^2",http_status):
@@ -57,7 +58,7 @@ def run_test(domain):
                     https_test['http_default'].append(domain)
                     logging.info(domain+" use default http.")
                     try:
-                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=10)
+                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=60)
                         http_status = str(res2.status_code)
                         logging.info("testing if https is available..")
                         if re.match(r"^2",http_status):
@@ -82,7 +83,7 @@ def run_test(domain):
                 get_https_error(domain, str(e))
             else:
                 try:
-                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=10)
+                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=60)
                     http_status = str(res2.status_code)
                     logging.info("testing if https is available..")
                     if re.match(r"^2",http_status):
@@ -126,6 +127,7 @@ def test_https(domain, domains):
 
     threads = []
 
+    random.shuffle(domains)
     for domain in domains:
         SHARE_Q.put(domain)
     for i in range(WORKER_THREAD_NUM):
@@ -147,6 +149,7 @@ def init_dir():
         os.mkdir('report')
     if not os.path.exists('report/test_https'):
         os.mkdir('report/test_https')
+    if not os.path.exists('report/test_https/log'):
         os.mkdir('report/test_https/log')
 
 if __name__ == "__main__":

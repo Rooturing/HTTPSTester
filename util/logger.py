@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
 import time
 
@@ -7,6 +8,10 @@ logger.setLevel(logging.DEBUG)
 
 # log format
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+if not os.path.exists('util/log/'):
+    os.mkdir('util/log')
+
 
 LOG_FILE = True
 if LOG_FILE:

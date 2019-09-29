@@ -25,6 +25,9 @@ class crtsh_db():
         self.domain_set = set() 
         self.level_1 = set()
 
+    def __del__(self):
+        self.conn.close()
+
     def play_db(self, sql):
         conn = self.conn
         conn.autocommit = True

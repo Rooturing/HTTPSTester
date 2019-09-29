@@ -15,7 +15,7 @@ import os
 def get_report(domain):
     with open("report/test_https/"+domain+".json") as f:
         https_test = json.load(f)
-    out_map = {'https_overall':{'http_default':len(https_test['http_default']),"http_only":len(https_test['http_only']),"https_reachable":len(https_test['https_reachable']),"https_default":len(https_test['https_default']),"https_only":len(https_test['https_only']),"https_error":len(https_test['https_error']),"unreachable":len(https_test['unreachable'])}}
+    out_map = {'https_overall':{'https_default':len(https_test['https_default']),"http_only":len(https_test['http_only']),"https_reachable":len(https_test['https_reachable']),"https_only":len(https_test['https_only']),"https_error":len(https_test['https_error']),"unreachable":len(https_test['unreachable'])}}
     return (https_test,out_map)
 
 def get_error_map(https_error):
@@ -81,6 +81,7 @@ if __name__=='__main__':
         (https_test,out_map) = get_report(domain)
         draw_overall_pie(https_test,domain)
 
+        '''
         ##parse the report from ssllab and draw piechar
         dlist = read_csv("report/ssllab/"+domain+"_error.csv")
         ##draw the piechar of error domain's ip
@@ -89,6 +90,7 @@ if __name__=='__main__':
         draw_error_reason(dlist,domain)
         ##draw the common names of error certs
         draw_error_cert(dlist,domain)
+        '''
 
         #count the relationships between domain and ip
         count_domains_ip_fromDNS(domain)
