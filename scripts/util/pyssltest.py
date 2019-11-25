@@ -371,8 +371,7 @@ def runscan(q,domain):
 
 def run(domain,inputfile, outputfile):
 
-    if not os.path.exists("report/ssllab/raw_results/"+domain):
-        os.mkdir("report/ssllab/raw_results/"+domain)
+    os.makedirs("output/report/ssllab/raw_results/"+domain)
 
     in_file = inputfile
     line_no = 1

@@ -7,6 +7,7 @@ from datetime import datetime
 from threading import Thread
 from queue import Queue
 from logger import logger 
+import os
 
 # db_name: lb, template0, certwatch, postgres, template1 (SELECT datname FROM pg_database)
 # table_name: select * from pg_tables
@@ -131,7 +132,7 @@ class crtsh_db():
             f.write('\n'.join(self.domain_set))             
 
     def write_domain(self, domain):
-        with open("domain/crtsh/"+domain+".txt","w") as f:
+        with open("../output/domain/crtsh/"+domain+".txt","w") as f:
             res = self.lookup_domain(domain)
             for item in res:
                 f.write(str(item)+'\n')

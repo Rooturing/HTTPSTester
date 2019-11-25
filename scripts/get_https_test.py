@@ -120,7 +120,7 @@ def worker():
 def test_https(domain, domains): 
     
     
-    f = open("report/test_https/"+domain+".json","w")
+    f = open("../output/report/test_https/"+domain+".json","w")
     
     global SHARE_Q
     global https_test 
@@ -144,17 +144,9 @@ def test_https(domain, domains):
 
     f.close()
 
-def init_dir():
-    if not os.path.exists('report'):
-        os.mkdir('report')
-    if not os.path.exists('report/test_https'):
-        os.mkdir('report/test_https')
-    if not os.path.exists('report/test_https/log'):
-        os.mkdir('report/test_https/log')
 
 if __name__ == "__main__":
-    init_dir()
     domain_list = sys.argv[1:]
     for domain in domain_list:
-        logging.basicConfig(filename='report/test_https/log/'+str(time.time())+"."+domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
-        test_https(domain, read_domains("domain/resolved_domain/"+domain+".txt"))
+        logging.basicConfig(filename='../output/report/test_https/log/'+str(time.time())+"."+domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+        test_https(domain, read_domains("../output/domain/resolved_domain/"+domain+".txt"))

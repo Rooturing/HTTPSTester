@@ -7,6 +7,7 @@ from Sublist3r import sublist3r
 from crtsh import *
 from query_dns import *
 from time import time
+os.path.join(os.getcwd(), "..")
 
 
 def findSubdoamin(origin_domain, domains):
@@ -20,7 +21,7 @@ def findSubdoamin(origin_domain, domains):
             out_domain = out_domain | set(subdomains)
         else:
             out_domain.add(domain)
-    with open("domain/fulldomain/"+origin_domain+".txt","w") as f:
+    with open("../output/domain/fulldomain/"+origin_domain+".txt","w") as f:
         f.write('\n'.join(out_domain))
     print("Finished! %d domains" % len(out_domain))
 
@@ -29,25 +30,13 @@ def read_domains(filename):
         text = f.read().strip()        
         return re.findall('(.*)\n', text)
 
-def init_dir():
-    if not os.path.exists('domain'):
-        os.mkdir('domain')
-    if not os.path.exists('domain/crtsh'):
-        os.mkdir('domain/crtsh')
-    if not os.path.exists('domain/resolved_domain'):
-        os.mkdir('domain/resolved_domain')
-    if not os.path.exists('domain/dnsres'):
-        os.mkdir('domain/dnsres')
-    if not os.path.exists('domain/fulldomain'):
-        os.mkdir('domain/fulldomain')
 if __name__ == "__main__":
-    init_dir()
     domains = sys.argv[1:]
     for domain in domains:
         start = time()
         crt = crtsh_db()
         crt.write_domain("."+domain)
-        findSubdoamin(domain, read_domains("domain/crtsh/."+domain+".txt"))
+        findSubdoamin(domain, read_domains("../output/domain/crtsh/."+domain+".txt"))
         sorted_d = sort_domains(domain)
         print("Finding DNS record for domian %s" % domain)
         write_DNSres(domain, sorted_d)
