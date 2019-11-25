@@ -6,6 +6,7 @@ import requests
 from Sublist3r import sublist3r
 from crtsh import *
 from query_dns import *
+from time import time
 
 
 def findSubdoamin(origin_domain, domains):
@@ -43,6 +44,7 @@ if __name__ == "__main__":
     init_dir()
     domains = sys.argv[1:]
     for domain in domains:
+        start = time()
         crt = crtsh_db()
         crt.write_domain("."+domain)
         findSubdoamin(domain, read_domains("domain/crtsh/."+domain+".txt"))
@@ -52,6 +54,7 @@ if __name__ == "__main__":
         print("DNS records have been written, finding resolved domains")
         count = get_resolved_domains(domain)
         print("Done! Total %d resolved domains for %s found!"%(count,domain))
+        print("Total time: %ds" % (time()-start))
         del crt
 
     
