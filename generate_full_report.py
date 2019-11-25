@@ -65,6 +65,8 @@ def init_dir():
         os.mkdir('report/pic')
     if not os.path.exists('report/domain_ip'):
         os.mkdir('report/domain_ip')
+    if not os.path.exists('report/chart'):
+        os.mkdir('report/chart')
 
 def init_pic_path(domain):
     if not os.path.exists('report/pic/'+domain):

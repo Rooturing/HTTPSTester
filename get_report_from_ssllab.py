@@ -42,7 +42,10 @@ if __name__ == "__main__":
     domains = sys.argv[1:]
     for domain in domains: 
         with open('report/test_https/'+domain+".json") as f:
-            https_test = json.dump(f)
-        write_error_domains(domain, del_error_message(https_test['https_error']))
-        run(domain,"report/error_domain/"+domain+"_https_error.txt","report/ssllab/"+domain+"_error.csv")
+            https_test = json.load(f)
+        #write_error_domains(domain, del_error_message(https_test['https_error']))
+        #if you only want to further test the error domains
+        #run(domain,"report/error_domain/"+domain+"_https_error.txt","report/ssllab/"+domain+"_error.csv")
+        #else you can test all domains
+        run(domain,"domain/resolved_domain/"+domain+".txt","report/ssllab/"+domain+".csv")
     
