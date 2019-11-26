@@ -2,7 +2,7 @@ import re
 import sys
 
 def count_domains_ip_fromDNS(domain):
-    with open("domain/dnsres/"+domain+"_DNSres.txt") as f:
+    with open("../output/domain/dnsres/"+domain+"_DNSres.txt") as f:
         records = f.read().split('\n\n')
     domain_ip_map = {}
     ip_domain_map = {}
@@ -20,11 +20,11 @@ def count_domains_ip_fromDNS(domain):
 
     ip_domain_map = sorted(ip_domain_map.items(),key=lambda item:item[0])
     
-    with open("report/domain_ip/"+domain+"_domain_ip.txt","w") as f:
+    with open("../output/report/domain_ip/"+domain+"_domain_ip.txt","w") as f:
         for k in domain_ip_map:
             f.write(k+":\n")
             f.write("\t"+str(domain_ip_map[k])+"\n")
-    with open("report/domain_ip/"+domain+"_ip_domain.txt","w") as f:
+    with open("../output/report/domain_ip/"+domain+"_ip_domain.txt","w") as f:
         for k in ip_domain_map:
             f.write(str(k[0])+"\n")
             f.write("\t"+str(k[1])+"\n")

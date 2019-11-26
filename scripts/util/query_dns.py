@@ -7,7 +7,7 @@ def sort_domains(domain):
     out_domains = []
 
     sorting = set()
-    f1 = open("domain/fulldomain/"+domain+".txt")
+    f1 = open("../output/domain/fulldomain/"+domain+".txt")
     ds = f1.read().split('\n')
     for d in ds:
         d = '.'.join(d.split(".")[::-1])
@@ -24,7 +24,7 @@ def read_domains(filename):
         return re.findall('(.*)\n', text)
 
 def write_DNSres(domain, domain_names):
-    with open("domain/dnsres/"+domain+"_DNSres.txt", "w") as f:
+    with open("../output/domain/dnsres/"+domain+"_DNSres.txt", "w") as f:
         for domain in domain_names:
             try:
                 A = dns.resolver.query(domain, "A")
@@ -38,8 +38,8 @@ def write_DNSres(domain, domain_names):
 
 def get_resolved_domains(domain):
     count = 0
-    f1 = open('domain/dnsres/'+domain+'_DNSres.txt')
-    f2 = open('domain/resolved_domain/'+domain+".txt", "w")
+    f1 = open('../output/domain/dnsres/'+domain+'_DNSres.txt')
+    f2 = open('../output/domain/resolved_domain/'+domain+".txt", "w")
     lines = f1.read().split('\n\n')
     for line in lines:
         if re.findall('NXDOMAIN', line) or not line:

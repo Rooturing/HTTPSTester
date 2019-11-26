@@ -108,7 +108,7 @@ def ip_worker():
         SHARE_Q.task_done()
 
 def get_cert_from_domains(domain, domain_list):
-    with open("report/cert/cert_from_domain/"+domain+"_fd.txt","w") as f:
+    with open("../output/report/cert/cert_from_domain/"+domain+"_fd.txt","w") as f:
         global SHARE_Q
         global out_text
         threads = []
@@ -123,7 +123,7 @@ def get_cert_from_domains(domain, domain_list):
         f.write('\n'.join(out_text))
 
 def get_cert_from_IP(domain, ip_list):
-    with open("report/cert/cert_from_ip/"+domain+"_fi.txt","w") as f:
+    with open("../output/report/cert/cert_from_ip/"+domain+"_fi.txt","w") as f:
         global SHARE_Q
         global out_text
         threads = []
@@ -155,7 +155,7 @@ def query_cert(serial_num):
 def search_cert_in_ct(cert_list,domain):
     print("total cert input: %d"%len(cert_list))
     cert_found = []
-    f = open("report/cert/cert_ct/"+domain+"_ct.txt","w")
+    f = open("../output/report/cert/cert_ct/"+domain+"_ct.txt","w")
     for cert in cert_list.keys():
         if len(cert)%2:
             serial_num = '0'+cert

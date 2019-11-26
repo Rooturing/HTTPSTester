@@ -47,14 +47,15 @@ def draw_overall_pie(https_test,domain):
     plt.legend(loc='upper left',bbox_to_anchor=(-0.15,1))
     plt.title("overall https analysis for "+domain)
     plt.show() 
-    if not os.path.exists('output/report/pic/'+domain):
+    if not os.path.exists('../output/report/pic/'+domain):
         os.mkdir('../output/report/pic/'+domain)
     plt.savefig("../output/report/pic/"+domain+"/"+domain+"https_overall_result.png")
     
 
 
 def init_pic_path(domain):
-    os.makedirs('../output/report/pic/'+domain)
+    if not os.path.exists('../output/report/pic/'+domain):
+        os.makedirs('../output/report/pic/'+domain)
 
 if __name__=='__main__':
     domains = sys.argv[1:]

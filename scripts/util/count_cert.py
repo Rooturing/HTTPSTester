@@ -19,10 +19,10 @@ def count_cert(filename):
         return cert_list
 
 def count_cert_fd(domain):
-    return count_cert("report/cert/cert_from_domain/"+domain+"_fd.txt")
+    return count_cert("../output/report/cert/cert_from_domain/"+domain+"_fd.txt")
 
 def count_cert_fi(domain):
-    return count_cert("report/cert/cert_from_ip/"+domain+"_fp.txt")
+    return count_cert("../output/report/cert/cert_from_ip/"+domain+"_fp.txt")
 
 def load_cert_ct(filename):
     with open(filename) as f:
@@ -58,7 +58,7 @@ def find_CA(domain,cert_list,where_from):
     plt.pie(x=fracs,labels=labels,autopct='%3.1f%%',startangle=90,pctdistance=0.8,labeldistance=1.1,rotatelabels=10,radius=0.68)
     plt.legend(loc='upper left',bbox_to_anchor=(-0.3,1),fontsize=10)
     plt.title('CA used by '+domain.split('.')[0],fontsize=15)
-    plt.savefig("report/pic/"+domain+"/"+domain+"cert_CA_"+where_from+".png")
+    plt.savefig("../output/report/pic/"+domain+"/"+domain+"cert_CA_"+where_from+".png")
 
     CA = {}
     for i in sorted_CA:
@@ -86,12 +86,12 @@ def find_shared_cert(domain,cl):
         if len(c[1]['domains'])>1:
             sc.append(c)
     print("total shared-certs found: %d"%len(sc))
-    with open('report/cert/shared_cert/'+domain+"_sc.txt",'w') as f:
+    with open('../output/report/cert/shared_cert/'+domain+"_sc.txt",'w') as f:
         f.write(str(sc)+'\n')
     return len(sc)
 
 def count_cert_in_ct(domain,certfd):
-    (fnd, nfnd) = load_cert_ct("report/cert/cert_ct/"+domain+"_ct.txt")
+    (fnd, nfnd) = load_cert_ct("../output/report/cert/cert_ct/"+domain+"_ct.txt")
     cert_in_ct = {'equals2':[],'equals1':[],'equals0':[],'more_than2':[]}
     for c in fnd:
         ctr = re.findall(r'\((.*?)\)',c[1])
@@ -103,7 +103,7 @@ def count_cert_in_ct(domain,certfd):
             cert_in_ct['more_than2'].append(c)
     for c in nfnd:
         cert_in_ct['equals0'].append(c)
-    with open("report/cert/cert_ct/"+domain+"_notInCT.txt",'w') as f:
+    with open("../output/report/cert/cert_ct/"+domain+"_notInCT.txt",'w') as f:
         for i in cert_in_ct['equals0']:
             f.write("serial number: "+i+", "+str(certfd[i])+'\n')
     print('total number of cert is %d, %d not found in ct'%(len(fnd)+len(nfnd),len(nfnd)))

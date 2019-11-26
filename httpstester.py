@@ -4,6 +4,8 @@ import subprocess
 import traceback
 import sys
 sys.path.append('scripts')
+import config
+import pymysql
 
 G = '\033[92m'  # green
 Y = '\033[93m'  # yellow
@@ -20,7 +22,8 @@ def banner():
      |  _  | | |   | | |  __/ ___) || |  __/\__ \ ||  __/ |   
      |_| |_| |_|   |_| |_|   |____/ |_|\___||___/\__\___|_| %s 
     
-    """%(C,W))
+      A Large-scale HTTPS evaluation tool with high performance.%s
+    """%(C,B,W))
 
 def parser_error(errmsg):
     banner()
@@ -69,9 +72,11 @@ def parse_args():
             'get_fulldomain',
             'get_https_test',
             'get_report_from_ssllab',
-            'generate_full_report'
+            'generate_full_report',
+            'test_none'
         ], 
         default='test_all', 
+        required=True,
         help="What test module would you like to perform?"
     )
     parser.add_argument(
@@ -79,6 +84,7 @@ def parse_args():
         '--output', 
         choices=['file','database'], 
         default='file', 
+        required=True,
         help="Choose the form of output of test results (file by default)"
     )
     return parser.parse_args()
@@ -133,6 +139,63 @@ def test_all(subdomain, domains):
     run_module('python3 get_report_from_ssllab.py ' + domains)
     run_module('python3 generate_full_report.py ' + domains)
 
+def init_db():
+    conn = pymysql.connect(host=db_host,
+                           port=3306,
+                           user=db_user,
+                           password=db_pass,
+                           charset='utf8')
+    cursor = conn.cursor()
+    cursor.execute('CREATE DATABASE IF NOT EXISTS '+db_name+' CHARACTER SET utf8;')
+    cursor.execute('USE '+db_name+';')
+    cursor.execute("""CREATE TABLE IF NOT EXISTS `domains`(
+                        `domain` VARCHAR(50) NOT NULL,
+                        `time` TIME NOT NULL,
+                        PRIMARY KEY(`domain`)
+                    )CHARACTER SET utf8;""")
+    conn.close()
+
+def insert_db(domain, subdomains):
+    conn = pymysql.connect(host=db_host,
+                           port=3306,
+                           user=db_user,
+                           password=db_pass,
+                           dataabse=db_name,
+                           charset='utf8')
+    cursor = conn.cursor()
+    #在总的domains表中更新域名最新测试时间
+    cursor.execute("""REPLACE INTO domains(domain, time)
+                        VALUES('%s',NOW())""" 
+                        % domain)
+    #创建单个域名的表，存放测试结果
+    try:
+        cursor.execute("""CREATE TABLE IF NOT EXISTS `%s`(
+                            `subdomain` VARCHAR(50) NOT NULL,
+                            PRIMARY KEY(`subdomain`)
+                        )CHARACTER SET utf8;""" % domain)
+        cursor.executemany("""REPLACE INTO `%s`(subdomain)
+                                VALUES(%s)
+                        """ % subdomains)
+    except:
+        conn.rollback()
+        print("%s[!] Oops! someting wrong when creating table for %s.%s" % (R,domain,W))
+    finally:
+        db.close()
+
+def store_res_to_db(domains):
+    init_db()
+    domains = domains.split(' ')
+    for domain in domains:
+        if os.file.exists('output/domain/resolves_domain/'+domain+'.txt'):
+            f = open('output/domain/resolves_domain/'+domain+'.txt','r')
+            subdomains = f.readall().split('\n')
+            f.close()
+            #insert into db 
+            insert_db(domain, subdomains)
+
+        else:
+            print("%s[*] Domain:%s hasen't been tested yet!%s" % (R,domain,W))
+
 def main(subdomain, domain, filename, module, output):
     if filename:
         f = open(filename)
@@ -143,9 +206,16 @@ def main(subdomain, domain, filename, module, output):
     os.chdir('scripts')
     if module == 'test_all':
         test_all(subdomain, domains)
-    else:
+        print("%s[*] Testing done!%s"%(G,W))
+    elif module != 'test_none':
         run_module('python3 ' + module + '.py ' + domains)
-
+        print("%s[*] Testing done!%s"%(G,W))
+    else:
+        print("%s[*] Nothing to test.%s"%(G,W))
+    os.chdir('..')
+    if output == 'database':
+        print("%s[*] Now saving the domain info to database...%s"%(G,W))
+        store_res_to_db(domains)
 
 def interactive():
     args = parse_args()
