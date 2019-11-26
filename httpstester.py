@@ -4,8 +4,10 @@ import subprocess
 import traceback
 import sys
 sys.path.append('scripts')
-import config
+from config import *
 import pymysql
+import warnings
+warnings.filterwarnings("ignore")
 
 G = '\033[92m'  # green
 Y = '\033[93m'  # yellow
@@ -144,23 +146,29 @@ def init_db():
                            port=3306,
                            user=db_user,
                            password=db_pass,
+                           database=db_name,
                            charset='utf8')
     cursor = conn.cursor()
-    cursor.execute('CREATE DATABASE IF NOT EXISTS '+db_name+' CHARACTER SET utf8;')
-    cursor.execute('USE '+db_name+';')
-    cursor.execute("""CREATE TABLE IF NOT EXISTS `domains`(
-                        `domain` VARCHAR(50) NOT NULL,
-                        `time` TIME NOT NULL,
-                        PRIMARY KEY(`domain`)
-                    )CHARACTER SET utf8;""")
-    conn.close()
+    #cursor.execute('CREATE DATABASE IF NOT EXISTS '+db_name+' CHARACTER SET utf8;')
+    #cursor.execute('USE '+db_name+';')
+    try:
+        cursor.execute("""CREATE TABLE IF NOT EXISTS `domains`(
+                            `domain` VARCHAR(50) NOT NULL,
+                            `time` DATETIME NOT NULL,
+                            PRIMARY KEY(`domain`)
+                        )CHARACTER SET utf8;""")
+    except:
+        pass
+    finally:
+        cursor.close()
+        conn.close()
 
 def insert_db(domain, subdomains):
     conn = pymysql.connect(host=db_host,
                            port=3306,
                            user=db_user,
                            password=db_pass,
-                           dataabse=db_name,
+                           database=db_name,
                            charset='utf8')
     cursor = conn.cursor()
     #在总的domains表中更新域名最新测试时间
@@ -173,33 +181,34 @@ def insert_db(domain, subdomains):
                             `subdomain` VARCHAR(50) NOT NULL,
                             PRIMARY KEY(`subdomain`)
                         )CHARACTER SET utf8;""" % domain)
-        cursor.executemany("""REPLACE INTO `%s`(subdomain)
-                                VALUES(%s)
-                        """ % subdomains)
-    except:
+        cursor.executemany('REPLACE INTO `' + domain + '`(subdomain) VALUES(%s)', subdomains)
+        conn.commit()
+        print("%s[*] %d subdomains inserted for %s.%s" % (G,cursor.rowcount,domain,W))
+    except Exception as e:
         conn.rollback()
         print("%s[!] Oops! someting wrong when creating table for %s.%s" % (R,domain,W))
+        print("%s[*] Error message: %s.%s" % (Y,str(e),W))
     finally:
-        db.close()
+        cursor.close()
+        conn.close()
 
 def store_res_to_db(domains):
     init_db()
     domains = domains.split(' ')
     for domain in domains:
-        if os.file.exists('output/domain/resolves_domain/'+domain+'.txt'):
-            f = open('output/domain/resolves_domain/'+domain+'.txt','r')
-            subdomains = f.readall().split('\n')
+        if os.path.exists('output/domain/resolved_domain/'+domain+'.txt'):
+            f = open('output/domain/resolved_domain/'+domain+'.txt')
+            subdomains = f.read().strip().split('\n')
             f.close()
             #insert into db 
             insert_db(domain, subdomains)
-
         else:
             print("%s[*] Domain:%s hasen't been tested yet!%s" % (R,domain,W))
 
 def main(subdomain, domain, filename, module, output):
     if filename:
         f = open(filename)
-        domains = ' '.join(f.readall().split('\n'))
+        domains = ' '.join(f.read().strip().split('\n'))
         f.close()
     else:
         domains = domain
