@@ -73,6 +73,7 @@ def parse_args():
             'test_all',
             'get_fulldomain',
             'get_https_test',
+            'test_login',
             'get_report_from_ssllab',
             'generate_full_report',
             'test_none'
@@ -122,6 +123,8 @@ def init_dir():
         os.makedirs('output/report/cert/cert_from_ip')
     if not os.path.exists('output/report/cert/shared_cert'):
         os.makedirs('output/report/cert/shared_cert')
+    if not os.path.exists('output/report/test_login'):
+        os.makedirs('output/report/test_login')
 
 def run_module(cmd):
     try:
@@ -138,6 +141,7 @@ def test_all(subdomain, domains):
             with open('../output/domain/resolved_domain/' + domain + '.txt','w') as f:
                 f.write(domain)
     run_module('python3 get_https_test.py ' + domains)
+    run_module('python3 test_login.py txt "../output/report/test_https/" "../output/report/test_login/" ' + domains)
     run_module('python3 get_report_from_ssllab.py ' + domains)
     run_module('python3 generate_full_report.py ' + domains)
 
@@ -149,8 +153,6 @@ def init_db():
                            database=db_name,
                            charset='utf8')
     cursor = conn.cursor()
-    #cursor.execute('CREATE DATABASE IF NOT EXISTS '+db_name+' CHARACTER SET utf8;')
-    #cursor.execute('USE '+db_name+';')
     try:
         cursor.execute("""CREATE TABLE IF NOT EXISTS `domains`(
                             `domain` VARCHAR(50) NOT NULL,
@@ -198,10 +200,14 @@ def store_res_to_db(domains):
     for domain in domains:
         if os.path.exists('output/domain/resolved_domain/'+domain+'.txt'):
             f = open('output/domain/resolved_domain/'+domain+'.txt')
-            subdomains = f.read().strip().split('\n')
+            subdomains = f.read().strip()
             f.close()
-            #insert into db 
-            insert_db(domain, subdomains)
+            if subdomains:
+                subdomains = subdomains.split('\n')
+                #insert into db 
+                insert_db(domain, subdomains)
+            else:
+                print("%s[*] Domain:%s doesn't have any subdomain to insert!%s" % (R,domain,W))
         else:
             print("%s[*] Domain:%s hasen't been tested yet!%s" % (R,domain,W))
 
@@ -215,6 +221,9 @@ def main(subdomain, domain, filename, module, output):
     os.chdir('scripts')
     if module == 'test_all':
         test_all(subdomain, domains)
+        print("%s[*] Testing done!%s"%(G,W))
+    elif module == 'test_login':
+        run_module('python3 ' + module + '.py txt "../output/report/test_https/" "../output/report/test_login/" ' + domains)
         print("%s[*] Testing done!%s"%(G,W))
     elif module != 'test_none':
         run_module('python3 ' + module + '.py ' + domains)

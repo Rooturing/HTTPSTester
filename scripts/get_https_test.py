@@ -120,7 +120,7 @@ def worker():
 def test_https(domain, domains): 
     
     
-    f = open("../output/report/test_https/"+domain+".json","w")
+    f_json = open("../output/report/test_https/"+domain+".json","w")
     
     global SHARE_Q
     global https_test 
@@ -140,10 +140,20 @@ def test_https(domain, domains):
     endTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     print('all done! start: '+startTime+', end:'+endTime)
     
-    json.dump(https_test,f)
+    json.dump(https_test,f_json)
 
-    f.close()
+    f_json.close()
 
+    #同时输出txt格式
+    f_txt = open("../output/report/test_https/"+domain+".txt","w")
+    for key in https_test:
+        if re.match(r'https_default',key) or re.match(r'https_only',key) or re.match(r'https_reachable',key) or re.match(r'https_error',key):
+            for d in https_test[key]:
+                f_txt.write('https://' + d.split('(')[0] + '\n')
+        if re.match(r'http_only',key) or re.match(r'https_reachable',key):
+            for d in https_test[key]:
+                f_txt.write('http://' + d + '\n')
+    f_txt.close()
 
 if __name__ == "__main__":
     domain_list = sys.argv[1:]
