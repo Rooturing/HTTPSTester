@@ -331,7 +331,7 @@ def runscan(q,domain):
                                 jobtrack[mydata.host] = mydata.response.body['status']
                                 print("Writing response...")
                                 mydata.fo = open(
-                                        "report/ssllab/raw_results/"+domain+"/"+mydata.host.strip("http://")+".txt", "w")
+                                        "../output/report/ssllab/raw_results/"+domain+"/"+mydata.host.strip("http://")+".txt", "w")
                                 # mydata.fo.write(mydata.response.raw_body);
                                 json.dump(mydata.response.body, mydata.fo)
                                 # Close opend file
@@ -358,7 +358,7 @@ def runscan(q,domain):
                 try:
                     if 'errors' in mydata.response.body:
                         jobtrack[mydata.dom] = mydata.response.body['status']
-                        mydata.fo = open("report/ssllab/raw_results/"+domain+"/"+mydata.dom.strip("http://")+".txt", "w")
+                        mydata.fo = open("../output/report/ssllab/raw_results/"+domain+"/"+mydata.dom.strip("http://")+".txt", "w")
                         json.dump(mydata.response.body, mydata.fo)
                         mydata.fo.close()
                         q.task_done()
@@ -426,7 +426,7 @@ def run(domain,inputfile, outputfile):
             curdom = parsetodomain(app)
             #print("\ncurdon: " +curdom)
             #print("\napp: "+app)
-            resfile = open("report/ssllab/raw_results/"+domain+"/"+app+".txt", "r")
+            resfile = open("../output/report/ssllab/raw_results/"+domain+"/"+app+".txt", "r")
             
             jsonresults = json.load(resfile)
             resfile.close()

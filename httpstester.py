@@ -132,18 +132,16 @@ def run_module(cmd):
     except Exception as e:
         print(traceback.format_exc())
 
-def test_all(subdomain, domains):
+def test_all(subdomain, domain):
     if subdomain:
-        run_module('python3 get_fulldomain.py ' + domains)
+        run_module('python3 get_fulldomain.py ' + domain)
     else:
-        d = domains.split(' ')
-        for domain in d:
-            with open('../output/domain/resolved_domain/' + domain + '.txt','w') as f:
-                f.write(domain)
-    run_module('python3 get_https_test.py ' + domains)
-    run_module('python3 test_login.py txt "../output/report/test_https/" "../output/report/test_login/" ' + domains)
-    run_module('python3 get_report_from_ssllab.py ' + domains)
-    run_module('python3 generate_full_report.py ' + domains)
+        with open('../output/domain/resolved_domain/' + domain + '.txt','w') as f:
+            f.write(domain)
+    run_module('python3 get_https_test.py ' + domain)
+    run_module('python3 test_login.py txt "../output/report/test_https/" "../output/report/test_login/" ' + domain)
+    run_module('python3 get_report_from_ssllab.py ' + domain)
+    run_module('python3 generate_full_report.py ' + domain)
 
 def init_db():
     conn = pymysql.connect(host=db_host,
@@ -196,7 +194,6 @@ def insert_db(domain, subdomains):
 
 def store_res_to_db(domains):
     init_db()
-    domains = domains.split(' ')
     for domain in domains:
         if os.path.exists('output/domain/resolved_domain/'+domain+'.txt'):
             f = open('output/domain/resolved_domain/'+domain+'.txt')
@@ -214,20 +211,21 @@ def store_res_to_db(domains):
 def main(subdomain, domain, filename, module, output):
     if filename:
         f = open(filename)
-        domains = ' '.join(f.read().strip().split('\n'))
+        domains = f.read().strip().split('\n')
         f.close()
     else:
-        domains = domain
+        domains = [domain]
     os.chdir('scripts')
-    if module == 'test_all':
-        test_all(subdomain, domains)
-        print("%s[*] Testing done!%s"%(G,W))
-    elif module == 'test_login':
-        run_module('python3 ' + module + '.py txt "../output/report/test_https/" "../output/report/test_login/" ' + domains)
-        print("%s[*] Testing done!%s"%(G,W))
-    elif module != 'test_none':
-        run_module('python3 ' + module + '.py ' + domains)
-        print("%s[*] Testing done!%s"%(G,W))
+    if module != 'test_none':
+        for domain in domains:
+            print("%s[*] Start testing %s!%s"%(G,domain,W))
+            if module == 'test_all':
+                test_all(subdomain, domain)
+            elif module == 'test_login':
+                run_module('python3 ' + module + '.py txt "../output/report/test_https/" "../output/report/test_login/" ' + domain)
+            elif module != 'test_none':
+                run_module('python3 ' + module + '.py ' + domain)
+            print("%s[*] Testing done for %s!%s"%(G,domain,W))
     else:
         print("%s[*] Nothing to test.%s"%(G,W))
     os.chdir('..')

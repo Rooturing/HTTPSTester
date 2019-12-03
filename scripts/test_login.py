@@ -148,7 +148,7 @@ def main(domain):
     if not os.path.isfile(filename):
         print("%s[!] File not exists for %s!%s" % (R,filename,W))
     else:
-        print("%s[*]Now testing for %s.%s" % (G,domain,W))
+        print("%s[*] Now testing for %s.%s" % (G,domain,W))
         if file_format == 'txt':
             with open(filename, 'r') as f:
                 urls = f.read().split('\n')
