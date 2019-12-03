@@ -128,8 +128,8 @@ def test_https(domain, domains):
     threads = []
 
     random.shuffle(domains)
-    for domain in domains:
-        SHARE_Q.put(domain)
+    for d in domains:
+        SHARE_Q.put(d)
     for i in range(WORKER_THREAD_NUM):
         thread = MyThread(worker)
         thread.start()
