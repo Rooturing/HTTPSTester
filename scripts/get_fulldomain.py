@@ -12,6 +12,12 @@ os.path.join(os.getcwd(), "..")
 
 def findSubdoamin(origin_domain, domains):
     out_domain = set()
+
+    #首先测试原域名的子域名
+    subdomains = sublist3r.main(origin_domain, 40, None, ports=None, silent=False, verbose= False, enable_bruteforce= False, engines=None)
+    out_domain = out_domain | set(subdomains)
+
+    #再测试证书公开日志中搜集到的*.通配符域名的子域
     for domain in domains:
         if re.findall(r"\*\.", domain):
             domain = domain.replace("*.","")
@@ -36,7 +42,8 @@ if __name__ == "__main__":
         start = time()
         crt = crtsh_db()
         crt.write_domain("."+domain)
-        findSubdoamin(domain, read_domains("../output/domain/crtsh/."+domain+".txt"))
+        subdomains = read_domains("../output/domain/crtsh/."+domain+".txt")
+        findSubdoamin(domain, subdomains)
         sorted_d = sort_domains(domain)
         print("Finding DNS record for domian %s" % domain)
         write_DNSres(domain, sorted_d)

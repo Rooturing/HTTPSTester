@@ -183,6 +183,7 @@ if __name__ == "__main__":
     #get all subdomains logged in crt.sh
     crt.write_domain(domain)
 
+
     #thumbprint = 'ec02a2bafdddd9628dc3c3fe217a4c7a09167fdb'
     #crt.fcert_by_thumbprint(thumbprint)
 

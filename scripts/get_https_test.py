@@ -150,7 +150,7 @@ def test_https(domain, domains):
         if re.match(r'https_default',key) or re.match(r'https_only',key) or re.match(r'https_reachable',key) or re.match(r'https_error',key):
             for d in https_test[key]:
                 f_txt.write('https://' + d.split('(')[0] + '\n')
-        if re.match(r'http_only',key) or re.match(r'https_reachable',key):
+        elif re.match(r'http_only',key):
             for d in https_test[key]:
                 f_txt.write('http://' + d + '\n')
     f_txt.close()
