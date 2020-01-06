@@ -21,6 +21,8 @@ resolver_lifetime = 30.0
 limit_resolve_conn = 500  
 
 # logger
+if not os.path.exists('output/report/log'):
+    os.makedirs('output/report/log')
 logger = logging.getLogger('httpstester')
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')

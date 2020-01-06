@@ -221,8 +221,6 @@ class Interactive:
                 test_https.TestHTTPS(domain, self.basedir).run() 
         elif self.module == 'test_login':
             pass
-        elif self.module != 'test_none':
-            pass
         print("%s[*] Testing done for %s!%s"%(G,domain,W))
 
     def main(self):
@@ -234,7 +232,7 @@ class Interactive:
         else:
             self.domains = [self.domain]
         print("%s[*] Start testing for module %s, domain number: %d.%s"%(G,self.module,len(self.domains),W))
-        if 'full_domain' in self.module:
+        if 'full_domain' in self.module or 'test_all' in self.module:
             for domain in self.domains:
                 fulldomain.Fulldomain(domain, self.basedir).run()
         elif self.module != 'test_none':

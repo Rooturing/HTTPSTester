@@ -39,7 +39,7 @@ class Fulldomain:
             text = f.read().strip()        
             return re.findall('(.*)\n', text)
 
-    async def run(self):
+    def run(self):
         start = time()
         print("Querying crt.sh for subdomains")
         crt = crtsh_db(self.basedir)
