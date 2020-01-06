@@ -6,7 +6,6 @@ import tldextract
 from datetime import datetime
 from threading import Thread
 from queue import Queue
-from logger import logger 
 import os
 
 # db_name: lb, template0, certwatch, postgres, template1 (SELECT datname FROM pg_database)
@@ -16,7 +15,7 @@ import os
 
 
 class crtsh_db():
-    def __init__(self):
+    def __init__(self, basedir):
         self.dbname = "certwatch"
         self.user = "guest"
         self.host = "crt.sh"
@@ -25,6 +24,7 @@ class crtsh_db():
         self.queue = Queue()
         self.domain_set = set() 
         self.level_1 = set()
+        self.basedir = basedir
 
     def __del__(self):
         self.conn.close()
@@ -67,8 +67,8 @@ class crtsh_db():
                             FROM certificate_identity ci WHERE ci.NAME_TYPE = 'dNSName'\
                             AND reverse(lower(ci.NAME_VALUE)) LIKE reverse(lower('%{}'));".format(domain))
             for result in cursor.fetchall():
-                unique_domains.add(result[0])
-                # self.lookup_domain(result[0])
+                if re.match(r'(.*'+domain+'$)',result[0]):
+                    unique_domains.add(result[0])
             return sorted(unique_domains)
         except Exception as e:
             logger.info(e)
@@ -132,7 +132,7 @@ class crtsh_db():
             f.write('\n'.join(self.domain_set))             
 
     def write_domain(self, domain):
-        with open("../output/domain/crtsh/"+domain+".txt","w") as f:
+        with open(self.basedir+"/output/domain/crtsh/"+domain+".txt","w") as f:
             res = self.lookup_domain(domain)
             for item in res:
                 f.write(str(item)+'\n')

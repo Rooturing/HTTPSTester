@@ -6,3 +6,14 @@ tldextract
 logger
 requests
 pymysql
+asyncio
+aiohttp
+aiomultiprocess
+aiofiles
+tqdm
+pybloom_live
+numpy
+matplotlib
+pyOpenSSL
+pandas
+nest_asyncio

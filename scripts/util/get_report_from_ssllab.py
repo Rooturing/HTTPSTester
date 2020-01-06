@@ -6,7 +6,7 @@ import os
 import re
 import requests
 from bs4 import BeautifulSoup
-from pyssltest import run
+from scripts.util.pyssltest import run
 import logging
 
 
