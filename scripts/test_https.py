@@ -10,6 +10,8 @@ from queue import Queue
 import json
 import aiohttp
 import asyncio
+from urllib.parse import urlparse
+import certifi
 
 
 headers = {
@@ -40,7 +42,6 @@ class TestHTTPS:
     def __init__(self, domain, basedir):
         self.domain = domain
         self.basedir = basedir
-        self.domains = read_domains(self.basedir+"/output/domain/resolved_domain/"+self.domain+".txt")
         self.https_test = {'https_default':[],'http_default':[],'https_reachable':[],'http_only':[],'https_only':[],'https_error':[],'unreachable':[]}
         self.WORKER_THREAD_NUM = 50 
         self.SHARE_Q = Queue()
@@ -62,21 +63,29 @@ class TestHTTPS:
 
     def run_test(self, domain):
         try:
-            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=60)
+            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=120)
+            redirect_url = re.findall('<meta[^>]*?url=(.*?)["\']', res1.text, re.IGNORECASE)
+            if redirect_url:
+                hostname = urlparse(redirect_url[0]).hostname
+                if hostname != domain:
+                    self.https_test['unreachable'].append(domain)
+                    domain = hostname
+                res1 = requests.get(redirect_url[0], allow_redirects=True, headers=headers, timeout=120)
             http_status = str(res1.status_code)
             url = res1.url
             if re.match(r"^2",http_status):
-                if re.findall("https", url):
+                if re.match(r"^https://", url):
                     self.https_test['https_default'].append(domain)
                     logging.info(domain+" use default https.")
                 else:
                     self.https_test['http_default'].append(domain)
                     logging.info(domain+" use default http.")
                     try:
-                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=60)
-                        http_status = str(res2.status_code)
                         logging.info("testing if https is available..")
-                        if re.match(r"^2",http_status):
+                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=120)
+                        http_status = str(res2.status_code)
+                        url = res2.url
+                        if re.match(r"^https://",url):
                             self.https_test['https_reachable'].append(domain)
                             logging.info(domain+" is https reachable.")
                         else:
@@ -93,15 +102,17 @@ class TestHTTPS:
                 logging.info(domain+" status code: "+http_status+", domain unreachable.")
                 self.https_test['unreachable'].append(domain)
         except Exception as e:
+            print(str(e))
             logging.info(e)
             if re.findall(r"SSLError", str(e)):
                 self.get_https_error(domain, str(e))
             else:
                 try:
-                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=60)
+                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=120)
                     http_status = str(res2.status_code)
+                    url = res2.url
                     logging.info("testing if https is available..")
-                    if re.match(r"^2",http_status):
+                    if re.match(r"^https://",url):
                         self.https_test['https_only'].append(domain)
                         logging.info(domain+" is https only.")
                     else:
@@ -127,6 +138,7 @@ class TestHTTPS:
 
     def test_https(self): 
         
+        self.domains = read_domains(self.basedir+"/output/domain/resolved_domain/"+self.domain+".txt")
         
         f_json = open(self.basedir+"/output/report/test_https/"+self.domain+".json","w")
         
@@ -168,4 +180,10 @@ class TestHTTPS:
     def run(self):
         logging.basicConfig(filename=self.basedir+'/output/report/test_https/log/'+str(time.time())+"."+self.domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
         self.test_https()
+
+if __name__ == "__main__":
+    domain = sys.argv[1]
+    h = TestHTTPS(domain, '')
+    h.run_test(domain)
+    print(h.https_test)
 
