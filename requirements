@@ -16,3 +16,4 @@ numpy
 matplotlib
 pyOpenSSL
 pandas
+certifi

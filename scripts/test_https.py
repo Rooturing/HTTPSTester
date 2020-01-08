@@ -63,14 +63,14 @@ class TestHTTPS:
 
     def run_test(self, domain):
         try:
-            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=120)
+            res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=certifi.where())
             redirect_url = re.findall('<meta[^>]*?url=(.*?)["\']', res1.text, re.IGNORECASE)
             if redirect_url:
                 hostname = urlparse(redirect_url[0]).hostname
                 if hostname != domain:
                     self.https_test['unreachable'].append(domain)
                     domain = hostname
-                res1 = requests.get(redirect_url[0], allow_redirects=True, headers=headers, timeout=120)
+                res1 = requests.get(redirect_url[0], allow_redirects=True, headers=headers, timeout=120, verify=certifi.where())
             http_status = str(res1.status_code)
             url = res1.url
             if re.match(r"^2",http_status):
@@ -82,7 +82,7 @@ class TestHTTPS:
                     logging.info(domain+" use default http.")
                     try:
                         logging.info("testing if https is available..")
-                        res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=120)
+                        res2 = requests.get("https://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=certifi.where())
                         http_status = str(res2.status_code)
                         url = res2.url
                         if re.match(r"^https://",url):
@@ -108,7 +108,7 @@ class TestHTTPS:
                 self.get_https_error(domain, str(e))
             else:
                 try:
-                    res2 = requests.get("https://"+domain, allow_redirects=True, verify=True, headers=headers, timeout=120)
+                    res2 = requests.get("https://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=certifi.where())
                     http_status = str(res2.status_code)
                     url = res2.url
                     logging.info("testing if https is available..")
