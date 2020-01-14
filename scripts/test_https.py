@@ -58,14 +58,15 @@ class TestHTTPS:
         elif re.findall(r"ECONNRESET", e):
             self.https_test['unreachable'].append(domain+ " (connection reset)")
         elif re.findall(r"bad handshake", e):
-            self.https_test['unreachable'].append(domain+ " (bad handshake)")
+            self.https_test['https_error'].append(domain+ " (bad handshake)")
         else:
             self.https_test['https_error'].append(domain+" (?)")
 
     def compare_hostname(self, url, domain):
         hostname = urlparse(url).hostname
         if hostname != domain:
-            self.https_test['redirected'].append(domain+'->'+hostname)
+            if domain+'->'+hostname not in self.https_test['redirected']:
+                self.https_test['redirected'].append(domain+'->'+hostname)
             if re.findall('.'.join(hostname.split('.')[1:]), domain):
                 if hostname not in self.domains:
                     self.domains.append(hostname)
@@ -81,6 +82,11 @@ class TestHTTPS:
         try:
             logging.info("testing if https is available..")
             res = requests.get("https://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
+            redirect_url = self.find_redirect(res.text)
+            if redirect_url:
+                if not self.compare_hostname(redirect_url[0], domain):
+                    return
+                res = requests.get(redirect_url[0], allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
             http_status = str(res.status_code)
             url = res.url
             condition = self.compare_hostname(url, domain)
@@ -104,14 +110,20 @@ class TestHTTPS:
         try:
             logging.info("testing if https is available..")
             res = requests.get("https://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
+            redirect_url = self.find_redirect(res.text)
+            if redirect_url:
+                if not self.compare_hostname(redirect_url[0], domain):
+                    return
+                res = requests.get(redirect_url[0], allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
             http_status = str(res.status_code)
             url = res.url
             condition = self.compare_hostname(url, domain)
             if condition != 1:
                 return
-            if re.match(r"^https://",url) and re.match(r"^2",http_status):
-                self.https_test['https_only'].append(domain)
-                logging.info(domain+" is https only.")
+            if re.match(r"^2",http_status):
+                if re.match(r"^https://",url):
+                    self.https_test['https_only'].append(domain)
+                    logging.info(domain+" is https only.")
             else:
                 logging.info("return error status code, http status code: "+http_status)
                 self.https_test['unreachable'].append(domain)
@@ -122,10 +134,25 @@ class TestHTTPS:
             else:
                 self.https_test['unreachable'].append(domain)
 
+    def find_redirect(self, html):
+
+        r = re.findall('<meta.*?url=(.*?)[\"\']>', html, re.IGNORECASE)
+        if r:
+            if urlparse(r[0]).hostname:
+                return r
+            else:
+                return 0
+        r = re.findall('window\.location\.href.*=.*[\'\"](.*?)[\'\"]', html, re.IGNORECASE)
+        if r:
+            if urlparse(r[0]).hostname:
+                return r
+            else:
+                return 0
+
     def run_test(self, domain):
         try:
             res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
-            redirect_url = re.findall('<meta[^>]*?url=(.*?)["\']', res1.text, re.IGNORECASE)
+            redirect_url = self.find_redirect(res1.text)
             if redirect_url:
                 if not self.compare_hostname(redirect_url[0], domain):
                     return
