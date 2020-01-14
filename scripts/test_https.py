@@ -42,7 +42,7 @@ class TestHTTPS:
     def __init__(self, domain, basedir):
         self.domain = domain
         self.basedir = basedir
-        self.https_test = {'https_default':[],'http_default':[],'https_reachable':[],'http_only':[],'https_only':[],'https_error':[],'unreachable':[],'redirected':[]}
+        self.https_test = {'https_default':[],'http_default':[],'https_reachable':[],'http_only':[],'https_only':[],'https_error':[],'https_bad_code':[],'http_bad_code':[],'redirected':[],'unreachable':[]}
         self.WORKER_THREAD_NUM = 50 
         self.SHARE_Q = Queue()
         self.LEFT_Q = 0 
@@ -78,10 +78,11 @@ class TestHTTPS:
         else:
             return 1 # same subdomain
 
-    def req_https_reachable(self, domain):
+    def req_https_reachable(self, domain, url):
         try:
             logging.info("testing if https is available..")
-            res = requests.get("https://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
+            path = urlparse(url).path
+            res = requests.get("https://"+domain+path, allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
             redirect_url = self.find_redirect(res.text)
             if redirect_url:
                 if not self.compare_hostname(redirect_url[0], domain):
@@ -93,11 +94,14 @@ class TestHTTPS:
             if condition != 1: # jump to other domains
                 return
             if re.match(r"^https://",url):
-                self.https_test['https_reachable'].append(domain)
-                logging.info(domain+" is https reachable.")
+                if re.match(r"^2",http_status):
+                    self.https_test['https_reachable'].append(domain)
+                    logging.info(domain+" is https reachable.")
+                else:
+                    self.https_test['https_bad_code'].append(domain)
+                    logging.info("return error status code, http status code: "+http_status)
             else:
                 self.https_test['http_only'].append(domain)
-                logging.info("return error status code, http status code: "+http_status)
         except Exception as e:                   
             logging.info(e)
             if re.findall("SSLError",str(e)):
@@ -120,13 +124,13 @@ class TestHTTPS:
             condition = self.compare_hostname(url, domain)
             if condition != 1:
                 return
-            if re.match(r"^2",http_status):
-                if re.match(r"^https://",url):
+            if re.match(r"^https://",url):
+                if re.match(r"^2",http_status):
                     self.https_test['https_only'].append(domain)
                     logging.info(domain+" is https only.")
-            else:
-                logging.info("return error status code, http status code: "+http_status)
-                self.https_test['unreachable'].append(domain)
+                else:
+                    logging.info("return error status code, http status code: "+http_status)
+                    self.https_test['https_bad_code'].append(domain)
         except Exception as e:                   
             logging.info(e)
             if re.findall("SSLError",str(e)):
@@ -163,20 +167,24 @@ class TestHTTPS:
             if condition == 0:   # jump to another domain, out of testing scope
                 return
             elif condition == 1: # same subdomain
-                if re.match(r"^2",http_status):
-                    if re.match(r"^https://", url): # use default HTTPS
+                if re.match(r"^https://", url): # use default HTTPS
+                    if re.match(r"^2",http_status):
                         self.https_test['https_default'].append(domain)
                         logging.info(domain+" use default https.")
                     else:                           # use default HTTP, try test HTTPS connectivity
+                        self.https_test['https_bad_code'].append(domain)
+                else:
+                    if re.match(r"^2",http_status):
                         self.https_test['http_default'].append(domain) 
                         logging.info(domain+" use default http.")
-                        self.req_https_reachable(domain)
-                else:
-                    self.req_https_only(domain)
+                        self.req_https_reachable(domain, url)
+                    else:
+                        self.https_test['http_bad_code'].append(domain)
+                        self.req_https_only(domain)
             elif condition == 2: # http:// jump to different subdomain, testing if https:// might not jump to different subdomains
-                self.req_https_reachable(domain)
+                self.req_https_reachable(domain, url)
         except Exception as e:
-            print(str(e))
+            #print(str(e))
             logging.info(e)
             if re.findall(r"SSLError", str(e)):
                 self.get_https_error(domain, str(e))
