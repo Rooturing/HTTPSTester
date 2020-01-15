@@ -3,7 +3,6 @@ import random
 import os
 import re
 import logging
-import time
 import sys
 import time, threading
 from queue import Queue
@@ -12,7 +11,7 @@ import aiohttp
 import asyncio
 from urllib.parse import urlparse
 import certifi
-
+import warnings
 
 headers = {
     'Pragma': 'no-cache',
@@ -42,11 +41,11 @@ class TestHTTPS:
     def __init__(self, domain, basedir):
         self.domain = domain
         self.basedir = basedir
+        self.headers = {}
         self.https_test = {'https_default':[],'http_default':[],'https_reachable':[],'http_only':[],'https_only':[],'https_error':[],'https_bad_code':[],'http_bad_code':[],'redirected':[],'unreachable':[]}
         self.WORKER_THREAD_NUM = 50 
         self.SHARE_Q = Queue()
         self.LEFT_Q = 0 
-        self.headers = {}
 
     def get_https_error(self, domain, e):
         #print(e)
@@ -157,12 +156,12 @@ class TestHTTPS:
     def run_test(self, domain):
         try:
             res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
-            self.headers = res1.headers
             redirect_url = self.find_redirect(res1.text)
             if redirect_url:
                 if not self.compare_hostname(redirect_url[0], domain):
                     return
                 res1 = requests.get(redirect_url[0], allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
+            self.headers[domain] = dict(res1.headers)
             http_status = str(res1.status_code)
             url = res1.url
             condition = self.compare_hostname(url, domain)
@@ -207,7 +206,10 @@ class TestHTTPS:
     def test_https(self): 
         
         self.domains = read_domains(self.basedir+"/output/domain/resolved_domain/"+self.domain+".txt")
-        
+
+        for d in self.domains:
+            self.headers[d] = {}
+
         f_json = open(self.basedir+"/output/report/test_https/"+self.domain+".json","w")
         
         threads = []
@@ -247,10 +249,11 @@ class TestHTTPS:
 
         #写入HTTP headers
         f = open(self.basedir+'/output/report/headers/'+self.domain+".json",'w')
-        f.write(json.dumps(self.headers))
+        json.dump(self.headers,f)
         f.close()
 
     def run(self):
+        warnings.filterwarnings('ignore')
         logging.basicConfig(filename=self.basedir+'/output/report/test_https/log/'+str(time.time())+"."+self.domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
         self.test_https()
 
@@ -260,4 +263,5 @@ if __name__ == "__main__":
     h.domains = [domain]
     h.run_test(domain)
     print(h.https_test)
+    print(h.headers)
 

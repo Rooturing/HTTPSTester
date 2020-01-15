@@ -37,6 +37,7 @@ class GetCert:
         self.domain_list = read_domains(basedir+'/output/domain/resolved_domain/'+domain+'.txt')
         self.basedir = basedir
         self.SHARE_Q = Queue()
+        self.LEFT_Q = len(self.domain_list)
         self.WORKER_THREAD_NUM = 30
         self.out_text = []
 
@@ -63,7 +64,7 @@ class GetCert:
             return None
 
     def ip_ssl_connect(self, ip):            
-        logging.basicConfig(filename=self.basedir+'/util/log/get_cert_from_ip.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+        logging.basicConfig(filename=self.basedir+'/output/log/get_cert_from_ip.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
         try:
             sslcontext = Context(TLSv1_METHOD)
             sslcontext.set_timeout(30)
@@ -93,7 +94,8 @@ class GetCert:
                 self.out_text.append("certfrom "+item+": serial number->"+str(hex(cert.get_serial_number()))+", issuer->"+str(cert.get_issuer())+", subject->"+str(cert.get_subject())+"\n")
             time.sleep(1)
             print("task done for: "+item)
-            print("queue size: "+str(self.SHARE_Q.qsize()))
+            self.LEFT_Q = self.LEFT_Q - 1
+            print("queue size: %d, %d left." % (self.SHARE_Q.qsize(), self.LEFT_Q))
             self.SHARE_Q.task_done()
 
     def ip_worker(self):
@@ -105,7 +107,8 @@ class GetCert:
                 self.out_text.append("certfrom "+item+": serial number->"+str(hex(cert.get_serial_number()))+", issuer->"+str(cert.get_issuer())+", subject->"+str(cert.get_subject())+"\n")
             time.sleep(1)
             print("task done for: "+item)
-            print("queue size: "+str(self.SHARE_Q.qsize()))
+            self.LEFT_Q = self.LEFT_Q - 1
+            print("queue size: %d, %d left." % (self.SHARE_Q.qsize(), self.LEFT_Q))
             self.SHARE_Q.task_done()
 
     def get_cert_from_domains(self):

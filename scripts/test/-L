@@ -1,0 +1,14 @@
+HTTP/2 302 
+server: WeiBo/LB
+content-type: text/html; charset=utf-8
+content-security-policy: block-all-mixed-content;
+location: https://passport.weibo.com/visitor/visitor?entry=miniblog&a=enter&url=https%3A%2F%2Fweibo.com%2Finvinciblesexychildwomen&domain=.weibo.com&ua=php-sso_sdk_client-0.6.28&_rand=1579085129.7448
+dpool_header: weibo_com13y157
+lb_header: venus51
+strict-transport-security: max-age=31536000; preload
+expires: Wed, 15 Jan 2020 10:45:29 GMT
+cache-control: max-age=0, no-cache, no-store
+pragma: no-cache
+date: Wed, 15 Jan 2020 10:45:29 GMT
+set-cookie: YF-Page-G0=8fee13afa53da91ff99fc89cc7829b07|1579085129|1579085129;Path=/
+

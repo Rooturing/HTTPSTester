@@ -97,6 +97,7 @@ class Interactive:
                 'full_domain',
                 'test_https',
                 'test_login',
+                'http_observatory',
                 'get_cert',
                 'full_report',
                 'test_none'
@@ -150,6 +151,8 @@ class Interactive:
             os.makedirs('output/report/rank')
         if not os.path.exists('output/report/headers'):
             os.makedirs('output/report/headers')
+        if not os.path.exists('output/report/http_observatory'):
+            os.makedirs('output/report/http_observatory')
 
 
     def init_db(self):
@@ -228,6 +231,8 @@ class Interactive:
             fullreport.FullReport(domain, self.basedir, self.domains)
         elif self.module == 'test_login':
             pass
+        elif self.module == 'http_observatory':
+            http_observatory.HTTPObservatory(domain, self.basedir).run()
         elif self.module == 'test_all':
             pass
         print("%s[*] Testing done for %s!%s"%(G,domain,W))
