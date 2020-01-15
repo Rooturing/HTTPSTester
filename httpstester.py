@@ -97,6 +97,7 @@ class Interactive:
                 'full_domain',
                 'test_https',
                 'test_login',
+                'get_cert',
                 'full_report',
                 'test_none'
             ], 
@@ -145,6 +146,10 @@ class Interactive:
             os.makedirs('output/report/cert/shared_cert')
         if not os.path.exists('output/report/test_login'):
             os.makedirs('output/report/test_login')
+        if not os.path.exists('output/report/rank'):
+            os.makedirs('output/report/rank')
+        if not os.path.exists('output/report/headers'):
+            os.makedirs('output/report/headers')
 
 
     def init_db(self):
@@ -211,15 +216,19 @@ class Interactive:
 
     def worker(self, domain):
         print("%s[*] Start testing %s!%s"%(G,domain,W))
-        if 'test_https' or 'test_all' in self.module:
+        if self.module == 'test_https':
             if not self.subdomain:
                 for domain in self.domains:
                     with open(self.basedir + '/output/domain/resolved_domain/' + domain + '.txt','w') as f:
                         f.write(domain)
             test_https.TestHTTPS(domain, self.basedir).run() 
+        elif self.module == 'get_cert':
+            get_cert.GetCert(domain, self.basedir).get_cert_from_domains()
         elif self.module == 'full_report':
-                test_https.TestHTTPS(domain, self.basedir).run() 
+            fullreport.FullReport(domain, self.basedir, self.domains)
         elif self.module == 'test_login':
+            pass
+        elif self.module == 'test_all':
             pass
         print("%s[*] Testing done for %s!%s"%(G,domain,W))
 
@@ -232,7 +241,7 @@ class Interactive:
         else:
             self.domains = [self.domain]
         print("%s[*] Start testing for module %s, domain number: %d.%s"%(G,self.module,len(self.domains),W))
-        if 'full_domain' in self.module or 'test_all' in self.module:
+        if self.module == 'full_domain' or self.module == 'test_all':
             for domain in self.domains:
                 fulldomain.Fulldomain(domain, self.basedir).run()
         elif self.module != 'test_none':
@@ -243,6 +252,10 @@ class Interactive:
                     print(e)
         else:
             print("%s[*] Nothing to test.%s"%(G,W))
+        if self.module == 'test_all' or self.module == 'full_report':
+            rank = gen_rank.GenRank(self.basedir, self.domains).run()
+            gen_rank.FindErrorReason(rank).run()
+    
         if self.output == 'database':
             print("%s[*] Now saving the domain info to database...%s"%(G,W))
             self.store_res_to_db(domains)

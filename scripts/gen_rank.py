@@ -3,19 +3,16 @@ import re
 import sys
 
 class GenRank:
-    def __init__(self, filename):
-        self.filename = filename
-        self.domains = []
+    def __init__(self, basedir, domains):
+        self.basedir = basedir
+        self.domains = domains
         self.https_count = {}
         self.https_rank = {}
         self.error_rank = {}
 
     def count(self):
-        with open(self.filename,'r') as f:
-            for line in f:
-                self.domains.append(line.strip())
         for c in self.domains:
-            j = json.load(open('json/'+c+'.json','r'))
+            j = json.load(open(self.basedir+'/output/report/test_https/'+c+'.json','r'))
             self.https_count[c] = {'https':len(j['https_default'])+len(j['https_only']),'http':len(j['http_default']),'error':len(j['https_error'])}
 
     def rank(self):
@@ -29,21 +26,30 @@ class GenRank:
         print(self.https_rank)
         print('error rank:')
         print(self.error_rank)
-        return self
     
     def output(self):
-        with open('https_count.json','w') as f:
-            json.dump(https_count,f)
+        with open(self.basedir+'/output/report/rank/https_count.json','w') as f:
+            json.dump(self.https_count,f)
+        with open(self.basedir+'/output/report/rank/https_rank.json','w') as f:
+            json.dump(self.https_rank,f)
+        with open(self.basedir+'/output/report/rank/error_rank.json','w') as f:
+            json.dump(self.error_rank,f)
 
-class Find_Error_Reason:
+    def run(self):
+        self.rank()
+        self.output()
+        return self
+
+class FindErrorReason:
     def __init__(self, rank):
+        self.basedir = rank.basedir
         self.rank = rank.error_rank
         self.error_report = {}
 
     def error_ip(self):
         for d in self.rank:
-            j = json.load(open('json/'+d[0]+'.json','r'))
-            dns = open('dnsres/'+d[0]+'_DNSres.txt','r').read()
+            j = json.load(open(self.basedir+'/output/report/test_https/'+d[0]+'.json','r'))
+            dns = open(self.basedir+'/output/domain/dnsres/'+d[0]+'.txt','r').read()
             error_reasons = {}
             for i in j['https_error']:
                 reason = re.findall('\((.*)\)',i)[0]
@@ -66,7 +72,8 @@ class Find_Error_Reason:
                         error_map[r]['multi_ip'].append(d)
             print(error_map)
 
-
+    def run(self):
+        self.error_ip()
 
 if __name__ == '__main__':
     filename = sys.argv[1]

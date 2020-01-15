@@ -46,6 +46,7 @@ class TestHTTPS:
         self.WORKER_THREAD_NUM = 50 
         self.SHARE_Q = Queue()
         self.LEFT_Q = 0 
+        self.headers = {}
 
     def get_https_error(self, domain, e):
         #print(e)
@@ -156,6 +157,7 @@ class TestHTTPS:
     def run_test(self, domain):
         try:
             res1 = requests.get("http://"+domain, allow_redirects=True, headers=headers, timeout=120, verify=self.basedir+'/scripts/util/trust_store/trust.pem')
+            self.headers = res1.headers
             redirect_url = self.find_redirect(res1.text)
             if redirect_url:
                 if not self.compare_hostname(redirect_url[0], domain):
@@ -242,6 +244,11 @@ class TestHTTPS:
                 for d in self.https_test[key]:
                     f_txt.write('http://' + d + '\n')
         f_txt.close()
+
+        #写入HTTP headers
+        f = open(self.basedir+'/output/report/headers/'+self.domain+".json",'w')
+        f.write(json.dumps(self.headers))
+        f.close()
 
     def run(self):
         logging.basicConfig(filename=self.basedir+'/output/report/test_https/log/'+str(time.time())+"."+self.domain+'.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
