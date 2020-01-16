@@ -14,4 +14,4 @@ matplotlib
 pyOpenSSL
 pandas
 certifi
--r scripts/util/http-observatory/requirements.txt
+-r scripts/util/http_observatory/requirements.txt

@@ -99,6 +99,7 @@ class Interactive:
                 'test_login',
                 'http_observatory',
                 'get_cert',
+                'gen_rank',
                 'full_report',
                 'test_none'
             ], 
@@ -257,7 +258,7 @@ class Interactive:
                     print(e)
         else:
             print("%s[*] Nothing to test.%s"%(G,W))
-        if self.module == 'test_all' or self.module == 'full_report':
+        if self.module == 'test_all' or self.module == 'full_report' or self.module == 'gen_rank':
             rank = gen_rank.GenRank(self.basedir, self.domains).run()
             gen_rank.FindErrorReason(rank).run()
     
