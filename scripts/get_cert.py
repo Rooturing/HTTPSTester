@@ -167,7 +167,7 @@ class GetCert:
                 cert_found.append(cert)
             else:
                 serial_num = '00'+cert
-                res = query_cert(serial_num)
+                res = self.query_cert(serial_num)
                 if res:
                     cert_found.append(cert)
                     f.write("\nfound, cert: "+serial_num+", res: "+str(res))

@@ -13,19 +13,22 @@ class GenRank:
     def count(self):
         for c in self.domains:
             j = json.load(open(self.basedir+'/output/report/test_https/'+c+'.json','r'))
-            self.https_count[c] = {'https':len(j['https_default'])+len(j['https_only']),'http':len(j['http_default']),'error':len(j['https_error'])}
+            self.https_count[c] = {'https':len(j['https_default'])+len(j['https_only']),'http':len(j['http_default']),'error':len(j['https_error']),'total':len(j['https_default'])+len(j['https_only'])+len(j['http_default'])+len(j['https_error'])}
 
     def rank(self):
         self.count()
         for item in self.https_count.items():
-            self.https_rank[item[0]] = item[1]['https'] 
-            self.error_rank[item[0]] = item[1]['error']
+            if item[1]['total']:
+                self.https_rank[item[0]] = round(item[1]['https'] / item[1]['total'],2)
+                self.error_rank[item[0]] = round(item[1]['error'] / item[1]['total'],2)
         self.https_rank = sorted(self.https_rank.items(), key=lambda item:item[1], reverse=True)
         self.error_rank = sorted(self.error_rank.items(), key=lambda item:item[1], reverse=True)
         print('https rank:')
         print(self.https_rank)
+        print(len(self.https_rank))
         print('error rank:')
         print(self.error_rank)
+        print(len(self.error_rank))
     
     def output(self):
         with open(self.basedir+'/output/report/rank/https_count.json','w') as f:
@@ -70,7 +73,9 @@ class FindErrorReason:
                             error_map[r][ip[0]].append(d)
                     else:
                         error_map[r]['multi_ip'].append(d)
-            print(error_map)
+            #print(error_map)
+            with open(self.basedir+'/output/report/chart/error_reason.json','w') as j:
+                json.dump(error_map,j)
 
     def run(self):
         self.error_ip()

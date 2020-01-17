@@ -118,7 +118,7 @@ class FullReport:
         return len(sc)
 
     def count_cert_in_ct(self, certfd):
-        (fnd, nfnd) = load_cert_ct(self.basedir+"/output/report/cert/cert_ct/"+self.domain+"_ct.txt")
+        (fnd, nfnd) = self.load_cert_ct(self.basedir+"/output/report/cert/cert_ct/"+self.domain+"_ct.txt")
         cert_in_ct = {'equals2':[],'equals1':[],'equals0':[],'more_than2':[]}
         for c in fnd:
             ctr = re.findall(r'\((.*?)\)',c[1])
@@ -138,7 +138,31 @@ class FullReport:
         CT = {'0':len(cert_in_ct['equals0']),'1':len(cert_in_ct['equals1']),'2':len(cert_in_ct['equals2']),'>2':len(cert_in_ct['more_than2'])}
         return CT
 
+    def http_score(self):
+        with open(self.basedir+'/output/report/http_observatory/'+self.domain+'.json','r') as j:
+            observe = json.load(j)
+        out = {}
+        number = 0
+        total_score = 0
+        for key in observe:
+            if 'scan' in observe[key]:
+                out[key] = {}
+                grade = observe[key]['scan']['grade']
+                score = observe[key]['scan']['score']
+                out[key]['grade'] = grade
+                out[key]['score'] = score
+                #print('%s, grade: %s, score: %s' % (key, grade, score))
+                total_score += int(score)
+                number += 1
+        average_score = total_score/number
+        out['average_score'] = average_score
+        print('averate score for %s is %d' % (self.domain, average_score))
+        with open(self.basedir+'/output/report/http_observatory/'+self.domain+'_score_sum.json','w') as j:
+            json.dump(out, j)
+
+
     def run(self):
+        '''
         #self.init_pic_path()
         self.get_report()
         #self.draw_overall_pie()
@@ -153,9 +177,14 @@ class FullReport:
         #draw the piechar for certs' CA map
         self.out_map['CA'] = self.find_CA(certfd,'fd')
         #search if the certificate was logged in CT
-        gs.search_cert_in_ct(certfd)
+        gc.search_cert_in_ct(certfd)
         #count the number of logged certs in CT, write down the not logged ones
         self.out_map['CT'] = self.count_cert_in_ct(certfd)
+        '''
+
+        #http observatory
+        self.http_score()
+
         
         #output the final result in json
         with open(self.basedir+'/output/report/chart/'+self.domain+".json","w") as f:
